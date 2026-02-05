@@ -1,11 +1,25 @@
 package com.example.gael_somer_anime.core.network
 
-object SessionManager {
-    var userToken: String? = null
+import android.content.Context
+import android.content.SharedPreferences
 
-    fun saveToken(token: String?) {
-        userToken = token
+object SessionManager {
+    private const val PREFS_NAME = "anime_prefs"
+    private const val TOKEN_KEY = "user_token"
+
+    private fun getPrefs(context: Context): SharedPreferences {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun fetchToken(): String? = userToken
+    // Guardar el token en el disco
+    fun saveToken(context: Context, token: String?) {
+        val editor = getPrefs(context).edit()
+        editor.putString(TOKEN_KEY, token)
+        editor.apply()
+    }
+
+    // Recuperar el token del disco
+    fun fetchToken(context: Context): String? {
+        return getPrefs(context).getString(TOKEN_KEY, null)
+    }
 }

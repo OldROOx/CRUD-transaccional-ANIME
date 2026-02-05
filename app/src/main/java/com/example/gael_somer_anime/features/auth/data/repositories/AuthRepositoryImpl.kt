@@ -4,14 +4,16 @@ import com.example.gael_somer_anime.core.network.AnimeApiService
 import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.features.auth.data.remote.models.*
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
+import android.content.Context
 
-class AuthRepositoryImpl(private val api: AnimeApiService) : AuthRepository {
+class AuthRepositoryImpl(private val api: AnimeApiService, private val context: Context) : AuthRepository {
 
     override suspend fun login(username: String, password: String): String? {
         val response = api.login(LoginRequestDto(username, password))
         if (response.isSuccessful) {
             val token = response.headers()["Authorization"]
-            SessionManager.saveToken(token)
+            // Guardamos el token usando el contexto
+            SessionManager.saveToken(context, token)
             return token
         }
         return null

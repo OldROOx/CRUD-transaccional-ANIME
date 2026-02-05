@@ -13,9 +13,19 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     fun login(user: String, pass: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading = true
-            val token = repository.login(user, pass)
-            isLoading = false
-            if (token != null) onSuccess() else authError = "Credenciales incorrectas"
+            authError = null
+            try {
+                val token = repository.login(user, pass)
+                isLoading = false
+                if (token != null) {
+                    onSuccess() // Ejecuta el callback sin pasarle el String para evitar el error de cast
+                } else {
+                    authError = "Usuario o contraseña incorrectos"
+                }
+            } catch (e: Exception) {
+                isLoading = false
+                authError = "Error de conexión"
+            }
         }
     }
 

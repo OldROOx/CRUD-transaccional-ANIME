@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.gael_somer_anime.core.di.AppContainer
+import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.features.auth.presentation.screens.LoginScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.RegisterScreen
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.AuthViewModel
@@ -17,25 +19,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializamos el contenedor de dependencias (estilo kt-demo)
-        val appContainer = AppContainer()
-
-        // Creamos el ViewModel pasando el repositorio del contenedor
+        // Inicializamos el contenedor con el contexto para la persistencia
+        val appContainer = AppContainer(this)
         val authViewModel = AuthViewModel(appContainer.authRepository)
 
         setContent {
             Gael_somer_animeTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    // Estado para controlar la navegación simple entre pantallas
-                    var currentScreen by remember { mutableStateOf("login") }
+
+                    // Revisar si ya hay un token guardado al abrir la app
+                    val savedToken = remember { SessionManager.fetchToken(this@MainActivity) }
+                    var currentScreen by remember {
+                        mutableStateOf(if (savedToken != null) "home" else "login")
+                    }
 
                     when (currentScreen) {
                         "login" -> LoginScreen(
                             viewModel = authViewModel,
-                            onLoginSuccess = { token ->
-                                // Aquí el token ya se guardó en SessionManager automáticamente
-                                println("Login exitoso. Token: $token")
-                                // El siguiente paso de tu equipo sería navegar a la lista de animes
+                            onLoginSuccess = {
+                                // Esta función coincide ahora con () -> Unit
+                                currentScreen = "home"
                             },
                             onNavToRegister = { currentScreen = "register" }
                         )
@@ -43,6 +46,9 @@ class MainActivity : ComponentActivity() {
                             viewModel = authViewModel,
                             onBackToLogin = { currentScreen = "login" }
                         )
+                        "home" -> {
+                            Text("¡Bienvenido! El token ha persistido correctamente.")
+                        }
                     }
                 }
             }
