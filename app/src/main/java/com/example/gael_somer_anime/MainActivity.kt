@@ -1,4 +1,4 @@
-=package com.example.gael_somer_anime
+package com.example.gael_somer_anime
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
