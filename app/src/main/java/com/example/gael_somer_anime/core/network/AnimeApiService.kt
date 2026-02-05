@@ -1,0 +1,18 @@
+package com.example.gael_somer_anime.core.network
+
+import com.example.gael_somer_anime.features.auth.data.remote.models.*
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.POST
+import retrofit2.http.GET
+
+interface AnimeApiService {
+    @POST("api/users/login")
+    suspend fun login(@Body request: LoginRequestDto): Response<Unit>
+
+    @POST("api/users/register")
+    suspend fun register(@Body request: RegisterRequestDto): Response<Unit>
+
+    @GET("api/animes")
+    suspend fun getAnimes(): Response<List<Any>> // Cambia Any por tu modelo de Anime luego
+}
