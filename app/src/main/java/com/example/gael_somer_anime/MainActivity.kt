@@ -13,20 +13,15 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gael_somer_anime.core.di.AppContainer
 import com.example.gael_somer_anime.core.navigation.*
 import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.features.auth.di.AuthModule
 import com.example.gael_somer_anime.features.auth.presentation.components.Header
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.HeaderViewModel
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModelFactory
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModelFactory
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val container = AppContainer(this)
-        val loginVMFactory = LoginViewModelFactory(container.loginUseCase)
-        val registerVMFactory = RegisterViewModelFactory(container.registerUseCase)
-        val headerVM = HeaderViewModel(container.logoutUseCase)
+        val appContainer = AppContainer(this)
+        val authModule = AuthModule(appContainer)
 
         setContent {
             Gael_somer_animeTheme {
@@ -42,7 +37,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         if (currentRoute == Screens.Home.route) {
-                            Header(title = "Anime App", viewModel = headerVM) {
+                            Header(
+                                title = "Anime App",
+                                factory = authModule.provideHeaderViewModelFactory()
+                            ) {
                                 navController.navigate(Screens.Login.route) {
                                     popUpTo(0)
                                 }
@@ -53,8 +51,8 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.padding(padding)) {
                         AppNavHost(
                             navController = navController,
-                            loginFactory = loginVMFactory,
-                            registerFactory = registerVMFactory,
+                            loginFactory = authModule.provideLoginViewModelFactory(),
+                            registerFactory = authModule.provideRegisterViewModelFactory(),
                             startDestination = startDest
                         )
                     }

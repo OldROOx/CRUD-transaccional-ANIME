@@ -11,14 +11,12 @@ object SessionManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    // Guardar el token en el disco
     fun saveToken(context: Context, token: String?) {
         val editor = getPrefs(context).edit()
         editor.putString(TOKEN_KEY, token)
         editor.apply()
     }
 
-    // Recuperar el token del disco
     fun fetchToken(context: Context): String? {
         return getPrefs(context).getString(TOKEN_KEY, null)
     }

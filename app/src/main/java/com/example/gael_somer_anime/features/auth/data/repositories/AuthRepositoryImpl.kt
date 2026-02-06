@@ -3,6 +3,7 @@ package com.example.gael_somer_anime.features.auth.data.repositories
 import android.content.Context
 import com.example.gael_somer_anime.core.network.AnimeApiService
 import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.features.auth.data.remote.mappers.toDomain
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginRequestDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
 import com.example.gael_somer_anime.features.auth.domain.entities.LoginResponse
@@ -15,14 +16,15 @@ class AuthRepositoryImpl(
 
     override suspend fun login(username: String, password: String): LoginResponse? {
         val response = api.login(LoginRequestDto(username, password))
-        if (response.isSuccessful) {
-            val loginResponse = response.body()
-            loginResponse?.accessToken?.let {
-                SessionManager.saveToken(context, it)
+        return if (response.isSuccessful) {
+            val loginResponseDto = response.body()
+            loginResponseDto?.let {
+                SessionManager.saveToken(context, it.accessToken)
+                it.toDomain()
             }
-            return loginResponse
+        } else {
+            null
         }
-        return null
     }
 
     override suspend fun register(username: String, email: String, password: String): Boolean {
