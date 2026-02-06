@@ -5,13 +5,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.gael_somer_anime.features.auth.presentation.screens.*
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.AuthViewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModelFactory
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModelFactory
 import androidx.compose.material3.Text
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    authViewModel: AuthViewModel,
+    loginFactory: LoginViewModelFactory,
+    registerFactory: RegisterViewModelFactory,
     startDestination: String
 ) {
     NavHost(
@@ -20,7 +22,7 @@ fun AppNavHost(
     ) {
         composable(Screens.Login.route) {
             LoginScreen(
-                viewModel = authViewModel,
+                factory = loginFactory,
                 onLoginSuccess = {
                     navController.navigate(Screens.Home.route) {
                         popUpTo(Screens.Login.route) { inclusive = true }
@@ -33,14 +35,13 @@ fun AppNavHost(
         }
         composable(Screens.Register.route) {
             RegisterScreen(
-                viewModel = authViewModel,
+                factory = registerFactory,
                 onBackToLogin = {
                     navController.popBackStack()
                 }
             )
         }
         composable(Screens.Home.route) {
-            // Pantalla temporal hasta que hagas la real
             Text("¡Bienvenido a la Home de Anime!")
         }
     }

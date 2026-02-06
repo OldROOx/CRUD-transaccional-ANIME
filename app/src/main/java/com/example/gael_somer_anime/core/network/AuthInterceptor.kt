@@ -8,7 +8,6 @@ class AuthInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val requestBuilder = chain.request().newBuilder()
 
-        // Buscamos el token persistente en SharedPreferences
         SessionManager.fetchToken(context)?.let {
             requestBuilder.addHeader("Authorization", it)
         }

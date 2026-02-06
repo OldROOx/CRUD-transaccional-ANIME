@@ -7,16 +7,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.AuthViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModelFactory
 
 @Composable
 fun LoginScreen(
-    viewModel: AuthViewModel,
-    onLoginSuccess: () -> Unit, // Cambiado a () -> Unit para evitar errores de casteo
+    factory: LoginViewModelFactory,
+    onLoginSuccess: () -> Unit,
     onNavToRegister: () -> Unit
 ) {
-    var user by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
+    val viewModel: LoginViewModel = viewModel(factory = factory)
+    val user by viewModel.username.collectAsStateWithLifecycle()
+    val pass by viewModel.password.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val authError by viewModel.authError.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -27,14 +33,14 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = user,
-            onValueChange = { user = it },
+            onValueChange = { viewModel.onUsernameChange(it) },
             label = { Text("Usuario") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = pass,
-            onValueChange = { pass = it },
+            onValueChange = { viewModel.onPasswordChange(it) },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
@@ -42,12 +48,12 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (viewModel.isLoading) {
+        if (isLoading) {
             CircularProgressIndicator()
         } else {
             Button(
                 onClick = {
-                    viewModel.login(user, pass) { onLoginSuccess() }
+                    viewModel.login { onLoginSuccess() }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -59,7 +65,7 @@ fun LoginScreen(
             }
         }
 
-        viewModel.authError?.let {
+        authError?.let {
             Text(it, color = MaterialTheme.colorScheme.error)
         }
     }

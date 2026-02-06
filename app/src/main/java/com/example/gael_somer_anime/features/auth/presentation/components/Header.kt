@@ -1,10 +1,10 @@
-package com.example.gael_somer_anime.features.common.presentation.components
+package com.example.gael_somer_anime.features.auth.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import com.example.gael_somer_anime.features.common.presentation.viewmodels.HeaderViewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.HeaderViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

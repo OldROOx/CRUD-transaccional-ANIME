@@ -7,16 +7,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.AuthViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModel
+import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModelFactory
 
 @Composable
 fun RegisterScreen(
-    viewModel: AuthViewModel,
+    factory: RegisterViewModelFactory,
     onBackToLogin: () -> Unit
 ) {
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val viewModel: RegisterViewModel = viewModel(factory = factory)
+    val username by viewModel.username.collectAsStateWithLifecycle()
+    val email by viewModel.email.collectAsStateWithLifecycle()
+    val password by viewModel.password.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val authError by viewModel.authError.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -35,7 +41,7 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = { viewModel.onUsernameChange(it) },
             label = { Text("Usuario") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -44,7 +50,7 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { viewModel.onEmailChange(it) },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -53,7 +59,7 @@ fun RegisterScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.onPasswordChange(it) },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
@@ -61,14 +67,12 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (viewModel.isLoading) {
+        if (isLoading) {
             CircularProgressIndicator()
         } else {
             Button(
                 onClick = {
-                    viewModel.register(username, email, password) {
-                        onBackToLogin()
-                    }
+                    viewModel.register { onBackToLogin() }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -80,8 +84,7 @@ fun RegisterScreen(
             }
         }
 
-        // Mostrar error si la API de tu amigo falla
-        viewModel.authError?.let {
+        authError?.let {
             Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
         }
     }

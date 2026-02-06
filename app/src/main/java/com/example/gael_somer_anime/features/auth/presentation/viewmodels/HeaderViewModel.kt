@@ -1,4 +1,4 @@
-package com.example.gael_somer_anime.features.common.presentation.viewmodels
+package com.example.gael_somer_anime.features.auth.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import com.example.gael_somer_anime.features.auth.domain.usecases.LogoutUseCase

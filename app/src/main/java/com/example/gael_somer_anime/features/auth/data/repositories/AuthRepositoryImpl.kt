@@ -5,6 +5,7 @@ import com.example.gael_somer_anime.core.network.AnimeApiService
 import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginRequestDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
+import com.example.gael_somer_anime.features.auth.domain.entities.LoginResponse
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
 
 class AuthRepositoryImpl(
@@ -12,12 +13,14 @@ class AuthRepositoryImpl(
     private val context: Context
 ) : AuthRepository {
 
-    override suspend fun login(username: String, password: String): String? {
+    override suspend fun login(username: String, password: String): LoginResponse? {
         val response = api.login(LoginRequestDto(username, password))
         if (response.isSuccessful) {
-            val token = response.headers()["Authorization"]
-            SessionManager.saveToken(context, token)
-            return token
+            val loginResponse = response.body()
+            loginResponse?.accessToken?.let {
+                SessionManager.saveToken(context, it)
+            }
+            return loginResponse
         }
         return null
     }
@@ -27,7 +30,6 @@ class AuthRepositoryImpl(
         return response.isSuccessful
     }
 
-    // Implementación real que borra el token del almacenamiento local
     override fun logout() {
         SessionManager.saveToken(context, null)
     }
