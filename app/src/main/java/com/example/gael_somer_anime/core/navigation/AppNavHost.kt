@@ -14,7 +14,10 @@ fun AppNavHost(
     authViewModel: AuthViewModel,
     startDestination: String
 ) {
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination
+    ) {
         composable(Screens.Login.route) {
             LoginScreen(
                 viewModel = authViewModel,
@@ -23,14 +26,22 @@ fun AppNavHost(
                         popUpTo(Screens.Login.route) { inclusive = true }
                     }
                 },
-                onNavToRegister = { navController.navigate(Screens.Register.route) }
+                onNavToRegister = {
+                    navController.navigate(Screens.Register.route)
+                }
             )
         }
         composable(Screens.Register.route) {
-            RegisterScreen(viewModel = authViewModel, onBackToLogin = { navController.popBackStack() })
+            RegisterScreen(
+                viewModel = authViewModel,
+                onBackToLogin = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable(Screens.Home.route) {
-            Text("Pantalla Principal de Anime")
+            // Pantalla temporal hasta que hagas la real
+            Text("¡Bienvenido a la Home de Anime!")
         }
     }
 }

@@ -8,16 +8,24 @@ import com.example.gael_somer_anime.features.common.presentation.viewmodels.Head
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Header(title: String, viewModel: HeaderViewModel, onLogout: () -> Unit) {
+fun Header(
+    title: String,
+    viewModel: HeaderViewModel,
+    onLogout: () -> Unit
+) {
     TopAppBar(
         title = { Text(title) },
         actions = {
             IconButton(onClick = { viewModel.logout(onLogout) }) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Cerrar sesión"
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     )
 }

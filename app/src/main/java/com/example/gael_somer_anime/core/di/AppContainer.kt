@@ -15,10 +15,9 @@ class AppContainer(private val context: Context) {
         .build()
 
     private val api: AnimeApiService by lazy { retrofit.create(AnimeApiService::class.java) }
-
     val authRepository: AuthRepository by lazy { AuthRepositoryImpl(api, context) }
 
-    // Casos de uso para ser inyectados en ViewModels
+    // Casos de Uso
     val loginUseCase by lazy { LoginUseCase(authRepository) }
     val registerUseCase by lazy { RegisterUseCase(authRepository) }
     val logoutUseCase by lazy { LogoutUseCase(authRepository) }
