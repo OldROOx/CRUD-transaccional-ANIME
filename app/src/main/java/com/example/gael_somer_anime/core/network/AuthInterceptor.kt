@@ -9,7 +9,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         val requestBuilder = chain.request().newBuilder()
 
         SessionManager.fetchToken(context)?.let {
-            requestBuilder.addHeader("Authorization", it)
+            requestBuilder.addHeader("Authorization", "Bearer $it")
         }
 
         return chain.proceed(requestBuilder.build())

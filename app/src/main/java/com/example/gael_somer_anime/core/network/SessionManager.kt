@@ -2,6 +2,7 @@ package com.example.gael_somer_anime.core.network
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 object SessionManager {
     private const val PREFS_NAME = "anime_prefs"
@@ -12,9 +13,9 @@ object SessionManager {
     }
 
     fun saveToken(context: Context, token: String?) {
-        val editor = getPrefs(context).edit()
-        editor.putString(TOKEN_KEY, token)
-        editor.apply()
+        getPrefs(context).edit {
+            putString(TOKEN_KEY, token)
+        }
     }
 
     fun fetchToken(context: Context): String? {
