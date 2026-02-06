@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gael_somer_anime.core.di.AppContainer
 import com.example.gael_somer_anime.core.navigation.*
 import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.features.anime.di.AnimeModule
 import com.example.gael_somer_anime.features.auth.di.AuthModule
 import com.example.gael_somer_anime.features.auth.presentation.components.Header
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
@@ -23,6 +24,7 @@ class MainActivity : ComponentActivity() {
 
         val appContainer = AppContainer(this)
         val authModule = AuthModule(appContainer)
+        val animeModule = AnimeModule(appContainer)
 
         setContent {
             Gael_somer_animeTheme {
@@ -54,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             loginFactory = authModule.provideLoginViewModelFactory(),
                             registerFactory = authModule.provideRegisterViewModelFactory(),
+                            animesFactory = animeModule.provideAnimesViewModelFactory(), // Añadido
                             startDestination = startDest
                         )
                     }

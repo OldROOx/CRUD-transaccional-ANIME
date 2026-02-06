@@ -4,16 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.gael_somer_anime.features.auth.presentation.screens.*
+import com.example.gael_somer_anime.features.anime.presentation.screens.AnimesScreen
+import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModelFactory
+import com.example.gael_somer_anime.features.auth.presentation.screens.LoginScreen
+import com.example.gael_somer_anime.features.auth.presentation.screens.RegisterScreen
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModelFactory
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModelFactory
-import androidx.compose.material3.Text
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     loginFactory: LoginViewModelFactory,
     registerFactory: RegisterViewModelFactory,
+    animesFactory: AnimesViewModelFactory, // Añadido
     startDestination: String
 ) {
     NavHost(
@@ -42,7 +45,7 @@ fun AppNavHost(
             )
         }
         composable(Screens.Home.route) {
-            Text("¡Bienvenido a la Home de Anime!")
+            AnimesScreen(factory = animesFactory)
         }
     }
 }
