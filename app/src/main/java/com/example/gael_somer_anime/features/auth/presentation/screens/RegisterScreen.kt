@@ -7,17 +7,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModel
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.RegisterViewModelFactory
 
 @Composable
 fun RegisterScreen(
-    factory: RegisterViewModelFactory,
-    onBackToLogin: () -> Unit
+    onBackToLogin: () -> Unit,
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    val viewModel: RegisterViewModel = viewModel(factory = factory)
     val username by viewModel.username.collectAsStateWithLifecycle()
     val email by viewModel.email.collectAsStateWithLifecycle()
     val password by viewModel.password.collectAsStateWithLifecycle()
@@ -25,9 +23,7 @@ fun RegisterScreen(
     val authError by viewModel.authError.collectAsStateWithLifecycle()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -71,14 +67,11 @@ fun RegisterScreen(
             CircularProgressIndicator()
         } else {
             Button(
-                onClick = {
-                    viewModel.register { onBackToLogin() }
-                },
+                onClick = { viewModel.register { onBackToLogin() } },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Crear Cuenta")
             }
-
             TextButton(onClick = onBackToLogin) {
                 Text("¿Ya tienes cuenta? Inicia sesión")
             }

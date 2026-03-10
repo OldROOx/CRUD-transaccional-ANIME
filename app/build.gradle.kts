@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -58,10 +60,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation("androidx.navigation:navigation-compose:2.8.5")
-
-    // También asegúrate de tener estas para los iconos del Header si no las tienes
     implementation("androidx.compose.material:material-icons-extended")
-
-    // Necesario para que el ViewModel funcione con Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    // Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
 }

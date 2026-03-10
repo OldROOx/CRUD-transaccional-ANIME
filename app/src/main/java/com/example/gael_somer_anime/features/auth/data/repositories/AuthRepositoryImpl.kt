@@ -8,23 +8,22 @@ import com.example.gael_somer_anime.features.auth.data.remote.models.LoginReques
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
 import com.example.gael_somer_anime.features.auth.domain.entities.LoginResponse
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class AuthRepositoryImpl(
+class AuthRepositoryImpl @Inject constructor(
     private val api: AnimeApiService,
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : AuthRepository {
 
     override suspend fun login(username: String, password: String): LoginResponse? {
         val response = api.login(LoginRequestDto(username, password))
         return if (response.isSuccessful) {
-            val loginResponseDto = response.body()
-            loginResponseDto?.let {
+            response.body()?.let {
                 SessionManager.saveToken(context, it.accessToken)
                 it.toDomain()
             }
-        } else {
-            null
-        }
+        } else null
     }
 
     override suspend fun register(username: String, email: String, password: String): Boolean {

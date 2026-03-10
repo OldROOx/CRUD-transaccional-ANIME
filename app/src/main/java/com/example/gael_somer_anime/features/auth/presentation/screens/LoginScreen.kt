@@ -7,18 +7,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModel
-import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModelFactory
 
 @Composable
 fun LoginScreen(
-    factory: LoginViewModelFactory,
     onLoginSuccess: () -> Unit,
-    onNavToRegister: () -> Unit
+    onNavToRegister: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val viewModel: LoginViewModel = viewModel(factory = factory)
     val user by viewModel.username.collectAsStateWithLifecycle()
     val pass by viewModel.password.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -52,14 +50,11 @@ fun LoginScreen(
             CircularProgressIndicator()
         } else {
             Button(
-                onClick = {
-                    viewModel.login { onLoginSuccess() }
-                },
+                onClick = { viewModel.login { onLoginSuccess() } },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Entrar")
             }
-
             TextButton(onClick = onNavToRegister) {
                 Text("¿No tienes cuenta? Regístrate")
             }
