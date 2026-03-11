@@ -7,18 +7,36 @@ import androidx.core.content.edit
 object SessionManager {
     private const val PREFS_NAME = "anime_prefs"
     private const val TOKEN_KEY = "user_token"
+    private const val USER_KEY = "saved_username"
+    private const val PASS_KEY = "saved_password"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
     fun saveToken(context: Context, token: String?) {
+        getPrefs(context).edit { putString(TOKEN_KEY, token) }
+    }
+
+    fun fetchToken(context: Context): String? = getPrefs(context).getString(TOKEN_KEY, null)
+
+    fun saveCredentials(context: Context, user: String?, pass: String?) {
         getPrefs(context).edit {
-            putString(TOKEN_KEY, token)
+            putString(USER_KEY, user)
+            putString(PASS_KEY, pass)
         }
     }
 
-    fun fetchToken(context: Context): String? {
-        return getPrefs(context).getString(TOKEN_KEY, null)
+    fun getSavedUser(context: Context): String? = getPrefs(context).getString(USER_KEY, null)
+    fun getSavedPass(context: Context): String? = getPrefs(context).getString(PASS_KEY, null)
+
+    fun clearToken(context: Context) {
+        getPrefs(context).edit {
+            remove(TOKEN_KEY)
+        }
+    }
+
+    fun clearAll(context: Context) {
+        getPrefs(context).edit { clear() }
     }
 }

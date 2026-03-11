@@ -2,6 +2,8 @@ package com.example.gael_somer_anime.features.anime.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gael_somer_anime.core.hardware.ShakeDetector
+import com.example.gael_somer_anime.core.hardware.VibrationManager
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.usecases.CreateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUseCase
@@ -11,34 +13,63 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class AnimesViewModel @Inject constructor(
     private val getAnimesUseCase: GetAnimesUseCase,
     private val createAnimeUseCase: CreateAnimeUseCase,
     private val updateAnimeUseCase: UpdateAnimeUseCase,
-    private val deleteAnimeUseCase: DeleteAnimeUseCase
+    private val deleteAnimeUseCase: DeleteAnimeUseCase,
+    private val shakeDetector: ShakeDetector,
+    private val vibrationManager: VibrationManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimesUiState())
     val uiState: StateFlow<AnimesUiState> = _uiState.asStateFlow()
 
-    init { loadAnimes() }
+    init { observeAnimes() }
 
-    fun loadAnimes() {
+    private fun observeAnimes() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val animeList = getAnimesUseCase()
-                _uiState.update { it.copy(animes = animeList ?: emptyList()) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Error al cargar los animes: ${e.message}") }
-            }
-            _uiState.update { it.copy(isLoading = false) }
+            getAnimesUseCase()
+                .catch { e ->
+                    _uiState.update { it.copy(error = "Error al cargar los animes: ${e.message}", isLoading = false) }
+                }
+                .collectLatest { animeList ->
+                    _uiState.update { it.copy(animes = animeList, isLoading = false) }
+                }
         }
+    }
+
+    fun startShakeDetection() {
+        shakeDetector.startListening {
+            showRandomAnime()
+        }
+    }
+
+    fun stopShakeDetection() {
+        shakeDetector.stopListening()
+    }
+
+    private fun showRandomAnime() {
+        val currentAnimes = _uiState.value.animes
+        if (currentAnimes.isNotEmpty()) {
+            val randomIndex = Random.nextInt(currentAnimes.size)
+            val randomAnime = currentAnimes[randomIndex]
+            vibrationManager.vibrateSuccess()
+            _uiState.update { it.copy(randomAnime = randomAnime, showRandomDialog = true) }
+        }
+    }
+
+    fun onCloseRandomDialog() {
+        _uiState.update { it.copy(showRandomDialog = false, randomAnime = null) }
     }
 
     fun onOpenDialog(anime: Anime? = null) {
@@ -91,7 +122,10 @@ class AnimesViewModel @Inject constructor(
     }
 
     fun onSaveAnime() {
-        if (!validateForm()) return
+        if (!validateForm()) {
+            vibrationManager.vibrateError()
+            return
+        }
         val currentState = _uiState.value
         val anioInt = currentState.anio.toInt()
         viewModelScope.launch {
@@ -102,9 +136,10 @@ class AnimesViewModel @Inject constructor(
                 } else {
                     updateAnimeUseCase(currentState.selectedAnime.id, currentState.titulo, currentState.genero, anioInt, currentState.descripcion)
                 }
-                loadAnimes()
+                vibrationManager.vibrateSuccess()
                 onCloseDialog()
             } catch (e: Exception) {
+                vibrationManager.vibrateError()
                 _uiState.update { it.copy(error = "Error al guardar el anime: ${e.message}") }
             }
             _uiState.update { it.copy(isLoading = false) }
@@ -116,9 +151,14 @@ class AnimesViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val success = deleteAnimeUseCase(id)
-                if (success) loadAnimes()
-                else _uiState.update { it.copy(error = "Error al borrar el anime.") }
+                if (success) {
+                    vibrationManager.vibrateSuccess()
+                } else {
+                    vibrationManager.vibrateError()
+                    _uiState.update { it.copy(error = "Error al borrar el anime.") }
+                }
             } catch (e: Exception) {
+                vibrationManager.vibrateError()
                 _uiState.update { it.copy(error = "Error al borrar el anime: ${e.message}") }
             }
             _uiState.update { it.copy(isLoading = false) }
@@ -139,5 +179,7 @@ data class AnimesUiState(
     val tituloError: String? = null,
     val generoError: String? = null,
     val anioError: String? = null,
-    val descripcionError: String? = null
+    val descripcionError: String? = null,
+    val showRandomDialog: Boolean = false,
+    val randomAnime: Anime? = null
 )

@@ -1,35 +1,75 @@
 package com.example.gael_somer_anime.features.anime.data.repositories
 
 import com.example.gael_somer_anime.core.network.AnimeApiService
+import com.example.gael_somer_anime.features.anime.data.local.dao.AnimeDao
 import com.example.gael_somer_anime.features.anime.data.mappers.toDomain
+import com.example.gael_somer_anime.features.anime.data.mappers.toEntity
 import com.example.gael_somer_anime.features.anime.data.remote.models.AnimeRequestDto
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.repositories.AnimeRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AnimeRepositoryImpl @Inject constructor(
-    private val api: AnimeApiService
+    private val api: AnimeApiService,
+    private val dao: AnimeDao
 ) : AnimeRepository {
 
-    override suspend fun getAnimes(): List<Anime>? {
-        val response = api.getAnimes()
-        return if (response.isSuccessful) response.body()?.map { it.toDomain() } else null
+    override fun getAnimes(): Flow<List<Anime>> {
+        return dao.getAllAnimes().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun syncAnimes(): Boolean {
+        return try {
+            val response = api.getAnimes()
+            if (response.isSuccessful) {
+                response.body()?.let { dtos ->
+                    val entities = dtos.map { it.toEntity() }
+                    dao.clearAll()
+                    dao.insertAnimes(entities)
+                    true
+                } ?: false
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String): Anime? {
         val request = AnimeRequestDto(titulo, genero, anio, descripcion)
         val response = api.createAnime(request)
-        return if (response.isSuccessful) response.body()?.toDomain() else null
+        return if (response.isSuccessful) {
+            val domainAnime = response.body()?.toDomain()
+            domainAnime?.let {
+                dao.insertAnime(it.toEntity())
+            }
+            domainAnime
+        } else null
     }
 
     override suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String): Anime? {
         val request = AnimeRequestDto(titulo, genero, anio, descripcion)
         val response = api.updateAnime(id, request)
-        return if (response.isSuccessful) response.body()?.toDomain() else null
+        return if (response.isSuccessful) {
+            val domainAnime = response.body()?.toDomain()
+            domainAnime?.let {
+                dao.insertAnime(it.toEntity())
+            }
+            domainAnime
+        } else null
     }
 
     override suspend fun deleteAnime(id: Int): Boolean {
         val response = api.deleteAnime(id)
-        return response.isSuccessful
+        if (response.isSuccessful) {
+            dao.deleteAnimeById(id)
+            return true
+        }
+        return false
     }
 }

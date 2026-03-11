@@ -32,6 +32,18 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override fun logout() {
-        SessionManager.saveToken(context, null)
+        // Solo borramos el token para permitir que la biometría use las credenciales guardadas
+        SessionManager.clearToken(context)
     }
+
+    override fun isLoggedIn(): Boolean {
+        return SessionManager.fetchToken(context) != null
+    }
+
+    override fun saveCredentials(user: String, pass: String) {
+        SessionManager.saveCredentials(context, user, pass)
+    }
+
+    override fun getSavedUser(): String? = SessionManager.getSavedUser(context)
+    override fun getSavedPass(): String? = SessionManager.getSavedPass(context)
 }

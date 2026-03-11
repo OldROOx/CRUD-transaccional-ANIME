@@ -14,16 +14,14 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface AnimeApiService {
-    // Auth
     @POST("api/users/login")
     suspend fun login(@Body request: LoginRequestDto): Response<LoginResponseDto>
 
     @POST("api/users/register")
     suspend fun register(@Body request: RegisterRequestDto): Response<Unit>
 
-    // Animes
     @GET("api/animes")
-    suspend fun getAnimes(): Response<List<AnimeResponseDto>>
+    suspend fun getAnimes  (): Response<List<AnimeResponseDto>>
 
     @POST("api/animes")
     suspend fun createAnime(@Body anime: AnimeRequestDto): Response<AnimeResponseDto>
