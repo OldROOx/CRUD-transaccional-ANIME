@@ -7,8 +7,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.sqrt
 
+@Singleton
 class AndroidShakeDetectorImpl @Inject constructor(
     @ApplicationContext context: Context
 ) : ShakeDetector, SensorEventListener {
@@ -41,7 +43,6 @@ class AndroidShakeDetectorImpl @Inject constructor(
         val delta = currentAcceleration - lastAcceleration
         acceleration = acceleration * 0.9f + delta
 
-        // Umbral de 12 para que sea sensible pero no se active solo
         if (acceleration > 12) {
             onShakeCallback?.invoke()
         }
