@@ -5,8 +5,9 @@ import com.example.gael_somer_anime.features.favorites.data.mappers.toDomain
 import com.example.gael_somer_anime.features.favorites.data.mappers.toDto
 import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
 import com.example.gael_somer_anime.features.favorites.domain.repositories.FavoritesRepository
+import javax.inject.Inject
 
-class FavoritesRepositoryImpl(
+class FavoritesRepositoryImpl @Inject constructor(
     private val localDataSource: FavoritesLocalDataSource
 ) : FavoritesRepository {
 

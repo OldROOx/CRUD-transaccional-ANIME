@@ -10,19 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gael_somer_anime.features.favorites.presentation.components.FavoriteItem
 import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModel
-import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    factory: FavoritesViewModelFactory,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: FavoritesViewModel = hiltViewModel()
 ) {
-    val viewModel: FavoritesViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(

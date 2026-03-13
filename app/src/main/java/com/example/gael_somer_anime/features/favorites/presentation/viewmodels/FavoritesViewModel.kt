@@ -6,12 +6,15 @@ import com.example.gael_somer_anime.features.favorites.domain.usecases.AddFavori
 import com.example.gael_somer_anime.features.favorites.domain.usecases.GetFavoritesUseCase
 import com.example.gael_somer_anime.features.favorites.domain.usecases.IsFavoriteUseCase
 import com.example.gael_somer_anime.features.favorites.domain.usecases.RemoveFavoriteUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
-class FavoritesViewModel(
+@HiltViewModel
+class FavoritesViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val addFavoriteUseCase: AddFavoriteUseCase,
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,

@@ -11,26 +11,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeFormDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeItem
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModel
-import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModelFactory
 import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
 import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModel
-import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModelFactory
 
 @Composable
 fun AnimesScreen(
-    factory: AnimesViewModelFactory,
-    favoritesFactory: FavoritesViewModelFactory,
-    onNavToFavorites: () -> Unit
+    onNavToFavorites: () -> Unit,
+    animesViewModel: AnimesViewModel = hiltViewModel(),
+    favoritesViewModel: FavoritesViewModel = hiltViewModel()
 ) {
-    val viewModel: AnimesViewModel = viewModel(factory = factory)
-    val favoritesViewModel: FavoritesViewModel = viewModel(factory = favoritesFactory)
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by animesViewModel.uiState.collectAsStateWithLifecycle()
     val favState by favoritesViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -43,7 +39,7 @@ fun AnimesScreen(
                     Icon(Icons.Filled.Favorite, contentDescription = "Ver Favoritos")
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                FloatingActionButton(onClick = { viewModel.onOpenDialog() }) {
+                FloatingActionButton(onClick = { animesViewModel.onOpenDialog() }) {
                     Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
                 }
             }
@@ -66,8 +62,8 @@ fun AnimesScreen(
                         AnimeItem(
                             anime = anime,
                             isFavorite = isFav,
-                            onEdit = { viewModel.onOpenDialog(anime) },
-                            onDelete = { viewModel.deleteAnime(anime.id) },
+                            onEdit = { animesViewModel.onOpenDialog(anime) },
+                            onDelete = { animesViewModel.deleteAnime(anime.id) },
                             onFavoriteToggle = {
                                 favoritesViewModel.toggleFavorite(
                                     Favorite(anime.id, anime.titulo, anime.genero, anime.anio, anime.descripcion)
@@ -81,9 +77,9 @@ fun AnimesScreen(
 
         AnimeFormDialog(
             uiState = uiState,
-            onFieldChange = { t, g, a, d -> viewModel.onFieldChange(t, g, a, d) },
-            onSave = { viewModel.onSaveAnime() },
-            onDismiss = { viewModel.onCloseDialog() }
+            onFieldChange = { t, g, a, d -> animesViewModel.onFieldChange(t, g, a, d) },
+            onSave = { animesViewModel.onSaveAnime() },
+            onDismiss = { animesViewModel.onCloseDialog() }
         )
     }
 }

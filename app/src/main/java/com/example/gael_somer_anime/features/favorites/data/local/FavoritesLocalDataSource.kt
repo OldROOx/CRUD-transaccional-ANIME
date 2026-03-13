@@ -4,9 +4,14 @@ import android.content.Context
 import androidx.core.content.edit
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class FavoritesLocalDataSource(context: Context) {
-
+@Singleton
+class FavoritesLocalDataSource @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     private val prefs = context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
