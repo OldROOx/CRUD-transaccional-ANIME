@@ -11,8 +11,8 @@ import com.example.gael_somer_anime.features.auth.presentation.viewmodels.Header
 @Composable
 fun Header(
     title: String,
-    onLogoutSuccess: () -> Unit,
-    viewModel: HeaderViewModel = hiltViewModel()
+    viewModel: HeaderViewModel = hiltViewModel(),
+    onLogoutSuccess: () -> Unit
 ) {
     TopAppBar(
         title = { Text(title) },

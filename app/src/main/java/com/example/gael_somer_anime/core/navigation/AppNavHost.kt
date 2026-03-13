@@ -8,6 +8,7 @@ import com.example.gael_somer_anime.features.anime.presentation.screens.AnimesSc
 import com.example.gael_somer_anime.features.auth.presentation.screens.LoginScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.RegisterScreen
 import com.example.gael_somer_anime.features.favorites.presentation.screens.FavoritesScreen
+import com.example.gael_somer_anime.features.watchlist.presentation.screens.WatchlistScreen
 
 @Composable
 fun AppNavHost(
@@ -39,11 +40,19 @@ fun AppNavHost(
             AnimesScreen(
                 onNavToFavorites = {
                     navController.navigate(Screens.Favorites.route)
+                },
+                onNavToWatchlist = {
+                    navController.navigate(Screens.Watchlist.route)
                 }
             )
         }
         composable(Screens.Favorites.route) {
             FavoritesScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screens.Watchlist.route) {
+            WatchlistScreen(
                 onBack = { navController.popBackStack() }
             )
         }

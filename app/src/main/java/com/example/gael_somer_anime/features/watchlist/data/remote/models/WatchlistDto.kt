@@ -25,6 +25,3 @@ data class WatchlistAnimeDto(
     @SerializedName("created_at") val createdAt: String
 )
 
-data class DeleteWatchlistResponse(
-    val message: String
-)

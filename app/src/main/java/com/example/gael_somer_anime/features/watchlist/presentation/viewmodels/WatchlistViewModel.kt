@@ -33,15 +33,13 @@ class WatchlistViewModel @Inject constructor(
     fun loadData() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
-            
-            // Observar animes (Lógica: Red -> Room ya implementada en el repo)
+
             launch {
                 getAnimesUseCase().collect { animeList ->
                     _state.value = _state.value.copy(animes = animeList)
                 }
             }
 
-            // Cargar Watchlist
             getWatchlistUseCase().onSuccess { watchlist ->
                 _state.value = _state.value.copy(
                     items = watchlist,

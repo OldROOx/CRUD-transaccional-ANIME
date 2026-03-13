@@ -25,7 +25,7 @@ enum class WatchlistStatus(val value: String) {
 
     companion object {
         fun fromString(value: String): WatchlistStatus {
-            return values().find { it.value == value } ?: POR_VER
+            return WatchlistStatus.entries.find { it.value == value } ?: POR_VER
         }
     }
 }

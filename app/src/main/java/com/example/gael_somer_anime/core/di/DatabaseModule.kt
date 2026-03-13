@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.gael_somer_anime.core.database.AppDatabase
 import com.example.gael_somer_anime.features.anime.data.local.dao.AnimeDao
+import com.example.gael_somer_anime.features.favorites.data.local.dao.FavoriteDao
 import com.example.gael_somer_anime.features.watchlist.data.local.dao.WatchlistDao
 import dagger.Module
 import dagger.Provides
@@ -24,7 +25,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "anime_database"
         )
-        .fallbackToDestructiveMigration() // Esto borrará las tablas si cambias la versión
+        .fallbackToDestructiveMigration()
         .build()
     }
 
@@ -36,5 +37,10 @@ object DatabaseModule {
     @Provides
     fun provideWatchlistDao(database: AppDatabase): WatchlistDao {
         return database.watchlistDao()
+    }
+
+    @Provides
+    fun provideFavoriteDao(database: AppDatabase): FavoriteDao {
+        return database.favoriteDao()
     }
 }

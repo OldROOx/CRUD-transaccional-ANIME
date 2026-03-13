@@ -5,5 +5,5 @@ import com.example.gael_somer_anime.features.favorites.domain.repositories.Favor
 import javax.inject.Inject
 
 class AddFavoriteUseCase @Inject constructor(private val repository: FavoritesRepository) {
-    operator fun invoke(favorite: Favorite) = repository.addFavorite(favorite)
+    suspend operator fun invoke(favorite: Favorite) = repository.addFavorite(favorite)
 }

@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class AnimeRepositoryImpl @Inject constructor(
@@ -29,10 +28,9 @@ class AnimeRepositoryImpl @Inject constructor(
                 dao.insertAnimes(entities)
             }
         } catch (e: Exception) {
-            // Error de red, el flow continuará con los datos locales
+            // Error de red
         }
         
-        // Siempre emitir lo que hay en la base de datos (que ahora está actualizada o es el fallback)
         emitAll(dao.getAllAnimes().map { entities ->
             entities.map { it.toDomain() }
         })

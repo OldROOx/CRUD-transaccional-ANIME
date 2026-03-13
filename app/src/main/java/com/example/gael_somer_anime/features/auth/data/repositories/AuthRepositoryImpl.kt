@@ -1,6 +1,7 @@
 package com.example.gael_somer_anime.features.auth.data.repositories
 
 import android.content.Context
+import androidx.room.util.appendPlaceholders
 import com.example.gael_somer_anime.core.network.AnimeApiService
 import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.features.auth.data.remote.mappers.toDomain
@@ -13,14 +14,15 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val api: AnimeApiService,
-    @ApplicationContext private val context: Context
+    @ApplicationContext  context: Context
 ) : AuthRepository {
 
+    val applicationContext = context;
     override suspend fun login(username: String, password: String): LoginResponse? {
         val response = api.login(LoginRequestDto(username, password))
         return if (response.isSuccessful) {
             response.body()?.let {
-                SessionManager.saveToken(context, it.accessToken)
+                SessionManager.saveToken(applicationContext, it.accessToken)
                 it.toDomain()
             }
         } else null
@@ -32,18 +34,17 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override fun logout() {
-        // Solo borramos el token para permitir que la biometría use las credenciales guardadas
-        SessionManager.clearToken(context)
+        SessionManager.clearToken(applicationContext)
     }
 
     override fun isLoggedIn(): Boolean {
-        return SessionManager.fetchToken(context) != null
+        return SessionManager.fetchToken(applicationContext) != null
     }
 
     override fun saveCredentials(user: String, pass: String) {
-        SessionManager.saveCredentials(context, user, pass)
+        SessionManager.saveCredentials(applicationContext, user, pass)
     }
 
-    override fun getSavedUser(): String? = SessionManager.getSavedUser(context)
-    override fun getSavedPass(): String? = SessionManager.getSavedPass(context)
+    override fun getSavedUser(): String? = SessionManager.getSavedUser(applicationContext)
+    override fun getSavedPass(): String? = SessionManager.getSavedPass(applicationContext)
 }

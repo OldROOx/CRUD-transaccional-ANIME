@@ -3,6 +3,7 @@ package com.example.gael_somer_anime.features.anime.presentation.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -21,7 +22,8 @@ fun AnimeItem(
     isFavorite: Boolean,
     onEdit: (Anime) -> Unit,
     onDelete: (Int) -> Unit,
-    onFavoriteToggle: () -> Unit
+    onFavoriteToggle: () -> Unit,
+    onWatchlistToggle: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -41,6 +43,13 @@ fun AnimeItem(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Row {
+                IconButton(onClick = onWatchlistToggle) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
+                        contentDescription = "Añadir a Watchlist",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 IconButton(onClick = onFavoriteToggle) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,

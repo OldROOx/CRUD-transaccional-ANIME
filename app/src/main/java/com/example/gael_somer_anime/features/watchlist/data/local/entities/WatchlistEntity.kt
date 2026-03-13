@@ -10,7 +10,6 @@ data class WatchlistEntity(
     val animeId: Int,
     val estado: String,
     val updatedAt: String,
-    // Detalles del anime anidado para caché
     val animeTitulo: String?,
     val animeGenero: String?,
     val animeAnio: Int?,

@@ -8,9 +8,7 @@ import com.example.gael_somer_anime.features.watchlist.domain.entities.Watchlist
 import com.example.gael_somer_anime.features.watchlist.domain.entities.WatchlistAnime
 import com.example.gael_somer_anime.features.watchlist.domain.entities.WatchlistStatus
 import com.example.gael_somer_anime.features.watchlist.domain.repositories.WatchlistRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class WatchlistRepositoryImpl @Inject constructor(
@@ -40,7 +38,6 @@ class WatchlistRepositoryImpl @Inject constructor(
                         )
                     }
                 )
-                // Actualizar local
                 dao.insertWatchlist(listOf(WatchlistEntity(
                     id = dto.id,
                     userId = dto.userId,
@@ -105,11 +102,9 @@ class WatchlistRepositoryImpl @Inject constructor(
                 }
                 Result.success(domainList)
             } else {
-                // Fallback a local si el API falla
                 fetchLocalWatchlist()
             }
-        } catch (e: Exception) {
-            // Fallback a local si no hay internet
+        } catch (_: Exception) {
             fetchLocalWatchlist()
         }
     }

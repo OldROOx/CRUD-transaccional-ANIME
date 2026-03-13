@@ -1,6 +1,7 @@
 package com.example.gael_somer_anime.features.favorites.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
 import com.example.gael_somer_anime.features.favorites.domain.usecases.AddFavoriteUseCase
 import com.example.gael_somer_anime.features.favorites.domain.usecases.GetFavoritesUseCase
@@ -10,7 +11,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,28 +29,33 @@ class FavoritesViewModel @Inject constructor(
     val uiState: StateFlow<FavoritesUiState> = _uiState.asStateFlow()
 
     init {
-        loadFavorites()
+        observeFavorites()
     }
 
-    fun loadFavorites() {
-        val favorites = getFavoritesUseCase()
-        _uiState.update { it.copy(favorites = favorites) }
+    private fun observeFavorites() {
+        getFavoritesUseCase()
+            .onEach { favorites: List<Favorite> ->
+                _uiState.update { it.copy(favorites = favorites) }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun toggleFavorite(favorite: Favorite) {
-        if (isFavoriteUseCase(favorite.id)) {
-            removeFavoriteUseCase(favorite.id)
-        } else {
-            addFavoriteUseCase(favorite)
+        viewModelScope.launch {
+            if (isFavoriteUseCase(favorite.id)) {
+                removeFavoriteUseCase(favorite.id)
+            } else {
+                addFavoriteUseCase(favorite)
+            }
         }
-        loadFavorites()
     }
 
-    fun isFavorite(id: Int): Boolean = isFavoriteUseCase(id)
+    fun isFavorite(id: Int): Boolean = _uiState.value.favorites.any { it.id == id }
 
     fun removeFavorite(id: Int) {
-        removeFavoriteUseCase(id)
-        loadFavorites()
+        viewModelScope.launch {
+            removeFavoriteUseCase(id)
+        }
     }
 }
 

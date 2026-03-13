@@ -2,31 +2,34 @@ package com.example.gael_somer_anime.features.favorites.data.repositories
 
 import com.example.gael_somer_anime.features.favorites.data.local.FavoritesLocalDataSource
 import com.example.gael_somer_anime.features.favorites.data.mappers.toDomain
-import com.example.gael_somer_anime.features.favorites.data.mappers.toDto
+import com.example.gael_somer_anime.features.favorites.data.mappers.toEntity
 import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
 import com.example.gael_somer_anime.features.favorites.domain.repositories.FavoritesRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FavoritesRepositoryImpl @Inject constructor(
     private val localDataSource: FavoritesLocalDataSource
 ) : FavoritesRepository {
 
-    override fun getFavorites(): List<Favorite> =
-        localDataSource.getAll().map { it.toDomain() }
-
-    override fun addFavorite(favorite: Favorite) {
-        val current = localDataSource.getAll().toMutableList()
-        if (current.none { it.id == favorite.id }) {
-            current.add(favorite.toDto())
-            localDataSource.save(current)
+    override fun getFavorites(): Flow<List<Favorite>> {
+        return localDataSource.getAll().map { entities ->
+            entities.map { it.toDomain() }
         }
     }
 
-    override fun removeFavorite(id: Int) {
-        val updated = localDataSource.getAll().filter { it.id != id }
-        localDataSource.save(updated)
+    override suspend fun addFavorite(favorite: Favorite) {
+        localDataSource.save(favorite.toEntity())
     }
 
-    override fun isFavorite(id: Int): Boolean =
-        localDataSource.getAll().any { it.id == id }
+    override suspend fun removeFavorite(id: Int) {
+        localDataSource.delete(id)
+    }
+
+    override suspend fun isFavorite(id: Int): Boolean {
+        return localDataSource.isFavorite(id)
+    }
 }

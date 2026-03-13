@@ -43,7 +43,7 @@ class RegisterViewModel @Inject constructor(
                 _isLoading.value = false
                 if (success) onSuccess()
                 else _authError.value = "Error al registrar"
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _isLoading.value = false
                 _authError.value = "Error de conexión"
             }

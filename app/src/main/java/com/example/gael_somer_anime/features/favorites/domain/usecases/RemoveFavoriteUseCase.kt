@@ -4,5 +4,5 @@ import com.example.gael_somer_anime.features.favorites.domain.repositories.Favor
 import javax.inject.Inject
 
 class RemoveFavoriteUseCase @Inject constructor(private val repository: FavoritesRepository) {
-    operator fun invoke(id: Int) = repository.removeFavorite(id)
+    suspend operator fun invoke(id: Int) = repository.removeFavorite(id)
 }
