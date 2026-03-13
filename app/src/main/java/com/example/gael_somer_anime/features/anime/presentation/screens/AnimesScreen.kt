@@ -1,49 +1,68 @@
 package com.example.gael_somer_anime.features.anime.presentation.screens
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeFormDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeItem
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModel
-import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModelFactory
+import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
+import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModel
+import com.example.gael_somer_anime.features.watchlist.domain.entities.WatchlistStatus
+import com.example.gael_somer_anime.features.watchlist.presentation.viewmodels.WatchlistViewModel
 
 @Composable
-fun AnimesScreen(factory: AnimesViewModelFactory) {
-    val viewModel: AnimesViewModel = viewModel(factory = factory)
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+fun AnimesScreen(
+    onNavToFavorites: () -> Unit,
+    onNavToWatchlist: () -> Unit,
+    animesViewModel: AnimesViewModel = hiltViewModel(),
+    favoritesViewModel: FavoritesViewModel = hiltViewModel(),
+    watchlistViewModel: WatchlistViewModel = hiltViewModel()
+) {
+    val uiState by animesViewModel.uiState.collectAsStateWithLifecycle()
+    val favState by favoritesViewModel.uiState.collectAsStateWithLifecycle()
+
+    // Manejo del ciclo de vida del sensor de movimiento (Shake)
+    DisposableEffect(Unit) {
+        animesViewModel.startShakeDetection()
+        onDispose {
+            animesViewModel.stopShakeDetection()
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onOpenDialog() }) {
-                Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
+            Column(horizontalAlignment = Alignment.End) {
+                FloatingActionButton(
+                    onClick = onNavToWatchlist,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Ver Watchlist")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                FloatingActionButton(
+                    onClick = onNavToFavorites,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Icon(Icons.Filled.Favorite, contentDescription = "Ver Favoritos")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                FloatingActionButton(onClick = { animesViewModel.onOpenDialog() }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
+                }
             }
         }
     ) { padding ->
@@ -57,25 +76,58 @@ fun AnimesScreen(factory: AnimesViewModelFactory) {
                 CircularProgressIndicator()
             } else if (uiState.error != null) {
                 Text(text = uiState.error!!)
-            }
-            else {
+            } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(uiState.animes) { anime ->
+                        val isFav = favState.favorites.any { it.id == anime.id }
+                        
                         AnimeItem(
                             anime = anime,
-                            onEdit = { viewModel.onOpenDialog(anime) },
-                            onDelete = { viewModel.deleteAnime(anime.id) }
+                            isFavorite = isFav,
+                            onEdit = { animesViewModel.onOpenDialog(anime) },
+                            onDelete = { animesViewModel.deleteAnime(anime.id) },
+                            onFavoriteToggle = {
+                                favoritesViewModel.toggleFavorite(
+                                    Favorite(anime.id, anime.titulo, anime.genero, anime.anio, anime.descripcion)
+                                )
+                            },
+                            onWatchlistToggle = {
+                                watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
+                            }
                         )
                     }
                 }
             }
         }
 
+        // Diálogo para añadir/editar anime
         AnimeFormDialog(
             uiState = uiState,
-            onFieldChange = { t, g, a, d -> viewModel.onFieldChange(t, g, a, d) },
-            onSave = { viewModel.onSaveAnime() },
-            onDismiss = { viewModel.onCloseDialog() }
+            onFieldChange = { t, g, a, d -> animesViewModel.onFieldChange(t, g, a, d) },
+            onSave = { animesViewModel.onSaveAnime() },
+            onDismiss = { animesViewModel.onCloseDialog() }
         )
+
+        // Diálogo de recomendación aleatoria (Shake)
+        if (uiState.showRandomDialog && uiState.randomAnime != null) {
+            AlertDialog(
+                onDismissRequest = { animesViewModel.onCloseRandomDialog() },
+                title = { Text(text = "¡Recomendación Aleatoria!") },
+                text = {
+                    Column {
+                        Text(text = "Título: ${uiState.randomAnime!!.titulo}", style = MaterialTheme.typography.titleMedium)
+                        Text(text = "Género: ${uiState.randomAnime!!.genero}")
+                        Text(text = "Año: ${uiState.randomAnime!!.anio}")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = uiState.randomAnime!!.descripcion)
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { animesViewModel.onCloseRandomDialog() }) {
+                        Text("Cerrar")
+                    }
+                }
+            )
+        }
     }
 }

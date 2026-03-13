@@ -1,6 +1,7 @@
 package com.example.gael_somer_anime.features.auth.data.repositories
 
 import android.content.Context
+import androidx.room.util.appendPlaceholders
 import com.example.gael_somer_anime.core.network.AnimeApiService
 import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.features.auth.data.remote.mappers.toDomain
@@ -8,23 +9,23 @@ import com.example.gael_somer_anime.features.auth.data.remote.models.LoginReques
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
 import com.example.gael_somer_anime.features.auth.domain.entities.LoginResponse
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class AuthRepositoryImpl(
+class AuthRepositoryImpl @Inject constructor(
     private val api: AnimeApiService,
-    private val context: Context
+    @ApplicationContext  context: Context
 ) : AuthRepository {
 
+    val applicationContext = context;
     override suspend fun login(username: String, password: String): LoginResponse? {
         val response = api.login(LoginRequestDto(username, password))
         return if (response.isSuccessful) {
-            val loginResponseDto = response.body()
-            loginResponseDto?.let {
-                SessionManager.saveToken(context, it.accessToken)
+            response.body()?.let {
+                SessionManager.saveToken(applicationContext, it.accessToken)
                 it.toDomain()
             }
-        } else {
-            null
-        }
+        } else null
     }
 
     override suspend fun register(username: String, email: String, password: String): Boolean {
@@ -33,6 +34,17 @@ class AuthRepositoryImpl(
     }
 
     override fun logout() {
-        SessionManager.saveToken(context, null)
+        SessionManager.clearToken(applicationContext)
     }
+
+    override fun isLoggedIn(): Boolean {
+        return SessionManager.fetchToken(applicationContext) != null
+    }
+
+    override fun saveCredentials(user: String, pass: String) {
+        SessionManager.saveCredentials(applicationContext, user, pass)
+    }
+
+    override fun getSavedUser(): String? = SessionManager.getSavedUser(applicationContext)
+    override fun getSavedPass(): String? = SessionManager.getSavedPass(applicationContext)
 }
