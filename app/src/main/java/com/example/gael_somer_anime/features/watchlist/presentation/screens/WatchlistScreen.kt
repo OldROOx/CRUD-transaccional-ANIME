@@ -68,10 +68,13 @@ fun WatchlistScreen(
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     items(state.items, key = { it.id }) { item ->
-                        val anime = state.animes.find { it.id == item.animeId }
+                        val animeName = item.anime?.titulo
+                            ?: state.animes.find { it.id == item.animeId }?.titulo 
+                            ?: "Cargando..."
+
                         WatchlistItem(
                             item = item,
-                            animeName = anime?.titulo ?: "Anime ID: ${item.animeId}",
+                            animeName = animeName,
                             onRemove = { viewModel.removeFromWatchlist(item.animeId) }
                         )
                     }
@@ -102,7 +105,7 @@ fun WatchlistItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = animeName,
+                    text = "Anime: $animeName",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -110,6 +113,17 @@ fun WatchlistItem(
                     text = "Estado: ${item.estado.value}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                val currentAnime = item.anime ?: item.animeId.let { id ->
+                    null
+                }
+                
+                if (currentAnime != null) {
+                    Text(
+                        text = "${currentAnime.genero} • ${currentAnime.anio}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             IconButton(onClick = onRemove) {
                 Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)

@@ -8,7 +8,10 @@ import com.example.gael_somer_anime.features.anime.data.remote.models.AnimeReque
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.repositories.AnimeRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class AnimeRepositoryImpl @Inject constructor(
@@ -16,10 +19,23 @@ class AnimeRepositoryImpl @Inject constructor(
     private val dao: AnimeDao
 ) : AnimeRepository {
 
-    override fun getAnimes(): Flow<List<Anime>> {
-        return dao.getAllAnimes().map { entities ->
-            entities.map { it.toDomain() }
+    override fun getAnimes(): Flow<List<Anime>> = flow {
+        try {
+            val response = api.getAnimes()
+            if (response.isSuccessful && response.body() != null) {
+                val dtos = response.body()!!
+                val entities = dtos.map { it.toEntity() }
+                dao.clearAll()
+                dao.insertAnimes(entities)
+            }
+        } catch (e: Exception) {
+            // Error de red, el flow continuará con los datos locales
         }
+        
+        // Siempre emitir lo que hay en la base de datos (que ahora está actualizada o es el fallback)
+        emitAll(dao.getAllAnimes().map { entities ->
+            entities.map { it.toDomain() }
+        })
     }
 
     override suspend fun syncAnimes(): Boolean {

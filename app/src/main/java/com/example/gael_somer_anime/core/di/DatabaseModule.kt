@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.gael_somer_anime.core.database.AppDatabase
 import com.example.gael_somer_anime.features.anime.data.local.dao.AnimeDao
+import com.example.gael_somer_anime.features.watchlist.data.local.dao.WatchlistDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,11 +23,18 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "anime_database"
-        ).build()
+        )
+        .fallbackToDestructiveMigration() // Esto borrará las tablas si cambias la versión
+        .build()
     }
 
     @Provides
     fun provideAnimeDao(database: AppDatabase): AnimeDao {
         return database.animeDao()
+    }
+
+    @Provides
+    fun provideWatchlistDao(database: AppDatabase): WatchlistDao {
+        return database.watchlistDao()
     }
 }

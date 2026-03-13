@@ -12,5 +12,19 @@ data class WatchlistResponseDto(
     @SerializedName("user_id") val userId: Int,
     @SerializedName("anime_id") val animeId: Int,
     val estado: String,
-    @SerializedName("updated_at") val updatedAt: String
+    @SerializedName("updated_at") val updatedAt: String,
+    val anime: WatchlistAnimeDto?
+)
+
+data class WatchlistAnimeDto(
+    val id: Int,
+    val titulo: String,
+    val genero: String,
+    @SerializedName("año") val anio: Int,
+    val descripcion: String,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class DeleteWatchlistResponse(
+    val message: String
 )

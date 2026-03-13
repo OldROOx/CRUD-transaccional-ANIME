@@ -1,14 +1,21 @@
 package com.example.gael_somer_anime.features.watchlist.data.repositories
 
 import com.example.gael_somer_anime.core.network.AnimeApiService
+import com.example.gael_somer_anime.features.watchlist.data.local.dao.WatchlistDao
+import com.example.gael_somer_anime.features.watchlist.data.local.entities.WatchlistEntity
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistRequestDto
 import com.example.gael_somer_anime.features.watchlist.domain.entities.Watchlist
+import com.example.gael_somer_anime.features.watchlist.domain.entities.WatchlistAnime
 import com.example.gael_somer_anime.features.watchlist.domain.entities.WatchlistStatus
 import com.example.gael_somer_anime.features.watchlist.domain.repositories.WatchlistRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class WatchlistRepositoryImpl @Inject constructor(
-    private val apiService: AnimeApiService
+    private val apiService: AnimeApiService,
+    private val dao: WatchlistDao
 ) : WatchlistRepository {
 
     override suspend fun addToWatchlist(animeId: Int, status: WatchlistStatus): Result<Watchlist> {
@@ -16,15 +23,37 @@ class WatchlistRepositoryImpl @Inject constructor(
             val response = apiService.addToWatchlist(WatchlistRequestDto(animeId, status.value))
             if (response.isSuccessful && response.body() != null) {
                 val dto = response.body()!!
-                Result.success(
-                    Watchlist(
-                        id = dto.id,
-                        userId = dto.userId,
-                        animeId = dto.animeId,
-                        estado = WatchlistStatus.fromString(dto.estado),
-                        updatedAt = dto.updatedAt
-                    )
+                val watchlist = Watchlist(
+                    id = dto.id,
+                    userId = dto.userId,
+                    animeId = dto.animeId,
+                    estado = WatchlistStatus.fromString(dto.estado),
+                    updatedAt = dto.updatedAt,
+                    anime = dto.anime?.let {
+                        WatchlistAnime(
+                            id = it.id,
+                            titulo = it.titulo,
+                            genero = it.genero,
+                            anio = it.anio,
+                            descripcion = it.descripcion,
+                            createdAt = it.createdAt
+                        )
+                    }
                 )
+                // Actualizar local
+                dao.insertWatchlist(listOf(WatchlistEntity(
+                    id = dto.id,
+                    userId = dto.userId,
+                    animeId = dto.animeId,
+                    estado = dto.estado,
+                    updatedAt = dto.updatedAt,
+                    animeTitulo = dto.anime?.titulo,
+                    animeGenero = dto.anime?.genero,
+                    animeAnio = dto.anime?.anio,
+                    animeDescripcion = dto.anime?.descripcion,
+                    animeCreatedAt = dto.anime?.createdAt
+                )))
+                Result.success(watchlist)
             } else {
                 Result.failure(Exception("Error adding to watchlist: ${response.code()}"))
             }
@@ -37,21 +66,78 @@ class WatchlistRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.getMyWatchlist()
             if (response.isSuccessful && response.body() != null) {
-                val list = response.body()!!.map { dto ->
+                val dtos = response.body()!!
+                val entities = dtos.map { dto ->
+                    WatchlistEntity(
+                        id = dto.id,
+                        userId = dto.userId,
+                        animeId = dto.animeId,
+                        estado = dto.estado,
+                        updatedAt = dto.updatedAt,
+                        animeTitulo = dto.anime?.titulo,
+                        animeGenero = dto.anime?.genero,
+                        animeAnio = dto.anime?.anio,
+                        animeDescripcion = dto.anime?.descripcion,
+                        animeCreatedAt = dto.anime?.createdAt
+                    )
+                }
+                dao.clearAll()
+                dao.insertWatchlist(entities)
+                
+                val domainList = dtos.map { dto ->
                     Watchlist(
                         id = dto.id,
                         userId = dto.userId,
                         animeId = dto.animeId,
                         estado = WatchlistStatus.fromString(dto.estado),
-                        updatedAt = dto.updatedAt
+                        updatedAt = dto.updatedAt,
+                        anime = dto.anime?.let {
+                            WatchlistAnime(
+                                id = it.id,
+                                titulo = it.titulo,
+                                genero = it.genero,
+                                anio = it.anio,
+                                descripcion = it.descripcion,
+                                createdAt = it.createdAt
+                            )
+                        }
                     )
                 }
-                Result.success(list)
+                Result.success(domainList)
             } else {
-                Result.failure(Exception("Error fetching watchlist: ${response.code()}"))
+                // Fallback a local si el API falla
+                fetchLocalWatchlist()
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            // Fallback a local si no hay internet
+            fetchLocalWatchlist()
+        }
+    }
+
+    private suspend fun fetchLocalWatchlist(): Result<List<Watchlist>> {
+        val entities = dao.getAllWatchlist().first()
+        return if (entities.isNotEmpty()) {
+            Result.success(entities.map { entity ->
+                Watchlist(
+                    id = entity.id,
+                    userId = entity.userId,
+                    animeId = entity.animeId,
+                    estado = WatchlistStatus.fromString(entity.estado),
+                    updatedAt = entity.updatedAt,
+                    anime = if (entity.animeTitulo != null) {
+                        WatchlistAnime(
+                            id = entity.animeId,
+                            titulo = entity.animeTitulo,
+                            genero = entity.animeGenero ?: "",
+                            anio = entity.animeAnio ?: 0,
+                            descripcion = entity.animeDescripcion ?: "",
+                            createdAt = entity.animeCreatedAt ?: ""
+                        )
+                    } else null
+                )
+            })
+        } else {
+            Result.failure(Exception("No hay conexión a internet y la base de datos está vacía."))
         }
     }
 
@@ -59,6 +145,7 @@ class WatchlistRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.removeFromWatchlist(animeId)
             if (response.isSuccessful) {
+                dao.deleteByAnimeId(animeId)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Error removing from watchlist: ${response.code()}"))
