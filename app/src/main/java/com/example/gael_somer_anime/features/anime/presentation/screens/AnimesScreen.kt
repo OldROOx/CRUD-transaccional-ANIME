@@ -3,48 +3,46 @@ package com.example.gael_somer_anime.features.anime.presentation.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeFormDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeItem
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModel
-import com.example.gael_somer_anime.features.watchlist.presentation.viewmodels.WatchlistViewModel
+import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModelFactory
+import com.example.gael_somer_anime.features.favorites.domain.entities.Favorite
+import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModel
+import com.example.gael_somer_anime.features.favorites.presentation.viewmodels.FavoritesViewModelFactory
 
 @Composable
 fun AnimesScreen(
-    viewModel: AnimesViewModel = hiltViewModel(),
-    watchlistViewModel: WatchlistViewModel = hiltViewModel(),
-    onNavToWatchlist: () -> Unit
+    factory: AnimesViewModelFactory,
+    favoritesFactory: FavoritesViewModelFactory,
+    onNavToFavorites: () -> Unit
 ) {
+    val viewModel: AnimesViewModel = viewModel(factory = factory)
+    val favoritesViewModel: FavoritesViewModel = viewModel(factory = favoritesFactory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LifecycleResumeEffect(viewModel) {
-        viewModel.startShakeDetection()
-        onPauseOrDispose {
-            viewModel.stopShakeDetection()
-        }
-    }
+    val favState by favoritesViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         floatingActionButton = {
-            Column {
-                FloatingActionButton(onClick = onNavToWatchlist) {
-                    Icon(Icons.Filled.List, contentDescription = "Ver Watchlist")
+            Column(horizontalAlignment = Alignment.End) {
+                FloatingActionButton(
+                    onClick = onNavToFavorites,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Icon(Icons.Filled.Favorite, contentDescription = "Ver Favoritos")
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 FloatingActionButton(onClick = { viewModel.onOpenDialog() }) {
                     Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
                 }
@@ -52,7 +50,9 @@ fun AnimesScreen(
         }
     ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             contentAlignment = Alignment.Center
         ) {
             if (uiState.isLoading) {
@@ -62,12 +62,16 @@ fun AnimesScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(uiState.animes) { anime ->
+                        val isFav = favoritesViewModel.isFavorite(anime.id)
                         AnimeItem(
                             anime = anime,
+                            isFavorite = isFav,
                             onEdit = { viewModel.onOpenDialog(anime) },
                             onDelete = { viewModel.deleteAnime(anime.id) },
-                            onAddToWatchlist = { id, status ->
-                                watchlistViewModel.addToWatchlist(id, status)
+                            onFavoriteToggle = {
+                                favoritesViewModel.toggleFavorite(
+                                    Favorite(anime.id, anime.titulo, anime.genero, anime.anio, anime.descripcion)
+                                )
                             }
                         )
                     }
@@ -81,45 +85,5 @@ fun AnimesScreen(
             onSave = { viewModel.onSaveAnime() },
             onDismiss = { viewModel.onCloseDialog() }
         )
-
-        if (uiState.showRandomDialog && uiState.randomAnime != null) {
-            Dialog(onDismissRequest = { viewModel.onCloseRandomDialog() }) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "Recomendación Aleatoria",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            uiState.randomAnime!!.titulo,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            uiState.randomAnime!!.genero,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            uiState.randomAnime!!.descripcion,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { viewModel.onCloseRandomDialog() }) {
-                            Text("Ok")
-                        }
-                    }
-                }
-            }
-        }
     }
 }
