@@ -1,0 +1,21 @@
+package com.example.gael_somer_anime.features.watchlist.domain.entities
+
+data class Watchlist(
+    val id: Int,
+    val userId: Int,
+    val animeId: Int,
+    val estado: WatchlistStatus,
+    val updatedAt: String
+)
+
+enum class WatchlistStatus(val value: String) {
+    VIENDO("viendo"),
+    COMPLETADO("completado"),
+    POR_VER("por_ver");
+
+    companion object {
+        fun fromString(value: String): WatchlistStatus {
+            return values().find { it.value == value } ?: POR_VER
+        }
+    }
+}

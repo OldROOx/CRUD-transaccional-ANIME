@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,9 +21,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeFormDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeItem
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModel
+import com.example.gael_somer_anime.features.watchlist.presentation.viewmodels.WatchlistViewModel
 
 @Composable
-fun AnimesScreen(viewModel: AnimesViewModel = hiltViewModel()) {
+fun AnimesScreen(
+    viewModel: AnimesViewModel = hiltViewModel(),
+    watchlistViewModel: WatchlistViewModel = hiltViewModel(),
+    onNavToWatchlist: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(viewModel) {
@@ -34,8 +40,14 @@ fun AnimesScreen(viewModel: AnimesViewModel = hiltViewModel()) {
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onOpenDialog() }) {
-                Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
+            Column {
+                FloatingActionButton(onClick = onNavToWatchlist) {
+                    Icon(Icons.Filled.List, contentDescription = "Ver Watchlist")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                FloatingActionButton(onClick = { viewModel.onOpenDialog() }) {
+                    Icon(Icons.Filled.Add, contentDescription = "Añadir Anime")
+                }
             }
         }
     ) { padding ->
@@ -53,7 +65,10 @@ fun AnimesScreen(viewModel: AnimesViewModel = hiltViewModel()) {
                         AnimeItem(
                             anime = anime,
                             onEdit = { viewModel.onOpenDialog(anime) },
-                            onDelete = { viewModel.deleteAnime(anime.id) }
+                            onDelete = { viewModel.deleteAnime(anime.id) },
+                            onAddToWatchlist = { id, status ->
+                                watchlistViewModel.addToWatchlist(id, status)
+                            }
                         )
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.gael_somer_anime.features.anime.presentation.screens.AnimesScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.LoginScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.RegisterScreen
+import com.example.gael_somer_anime.features.watchlist.presentation.screens.WatchlistScreen
 
 @Composable
 fun AppNavHost(
@@ -37,7 +38,18 @@ fun AppNavHost(
             )
         }
         composable(Screens.Home.route) {
-            AnimesScreen()
+            AnimesScreen(
+                onNavToWatchlist = {
+                    navController.navigate(Screens.Watchlist.route)
+                }
+            )
+        }
+        composable(Screens.Watchlist.route) {
+            WatchlistScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

@@ -5,6 +5,8 @@ import com.example.gael_somer_anime.features.anime.data.remote.models.AnimeRespo
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginRequestDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginResponseDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
+import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistRequestDto
+import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -21,7 +23,7 @@ interface AnimeApiService {
     suspend fun register(@Body request: RegisterRequestDto): Response<Unit>
 
     @GET("api/animes")
-    suspend fun getAnimes  (): Response<List<AnimeResponseDto>>
+    suspend fun getAnimes(): Response<List<AnimeResponseDto>>
 
     @POST("api/animes")
     suspend fun createAnime(@Body anime: AnimeRequestDto): Response<AnimeResponseDto>
@@ -30,5 +32,15 @@ interface AnimeApiService {
     suspend fun updateAnime(@Path("id") id: Int, @Body anime: AnimeRequestDto): Response<AnimeResponseDto>
 
     @DELETE("api/animes/{id}")
-    suspend fun deleteAnime(@Path("id") id: Int): Response<Unit> // Cambiado
+    suspend fun deleteAnime(@Path("id") id: Int): Response<Unit>
+
+    // Watchlist
+    @POST("api/watchlist/")
+    suspend fun addToWatchlist(@Body request: WatchlistRequestDto): Response<WatchlistResponseDto>
+
+    @GET("api/watchlist/me")
+    suspend fun getMyWatchlist(): Response<List<WatchlistResponseDto>>
+
+    @DELETE("api/watchlist/{anime_id}")
+    suspend fun removeFromWatchlist(@Path("anime_id") animeId: Int): Response<Unit>
 }
