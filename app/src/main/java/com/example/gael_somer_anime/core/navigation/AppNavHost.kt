@@ -4,40 +4,33 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.gael_somer_anime.features.anime.presentation.screens.AnimesScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.LoginScreen
 import com.example.gael_somer_anime.features.auth.presentation.screens.RegisterScreen
+import com.example.gael_somer_anime.features.anime.presentation.screens.AnimesScreen
+import com.example.gael_somer_anime.features.anime.presentation.screens.FavoritesScreen
 
 @Composable
-fun AppNavHost(
-    navController: NavHostController,
-    startDestination: String
-) {
+fun AppNavHost(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screens.Login.route
     ) {
         composable(Screens.Login.route) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screens.Home.route) {
-                        popUpTo(Screens.Login.route) { inclusive = true }
-                    }
-                },
-                onNavToRegister = {
-                    navController.navigate(Screens.Register.route)
-                }
-            )
+            LoginScreen(navController)
         }
+
         composable(Screens.Register.route) {
-            RegisterScreen(
-                onBackToLogin = {
-                    navController.popBackStack()
-                }
-            )
+            RegisterScreen(navController)
         }
-        composable(Screens.Home.route) {
-            AnimesScreen()
+
+        composable(Screens.Animes.route) {
+            // Pasamos el navController para que el Header pueda navegar a Favoritos
+            AnimesScreen(navController = navController)
+        }
+
+        composable(Screens.Favorites.route) {
+            // Nueva pantalla de favoritos
+            FavoritesScreen()
         }
     }
 }
