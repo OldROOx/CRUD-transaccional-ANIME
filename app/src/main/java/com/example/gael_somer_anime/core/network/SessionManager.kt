@@ -7,6 +7,7 @@ import androidx.core.content.edit
 object SessionManager {
     private const val PREFS_NAME = "anime_prefs"
     private const val TOKEN_KEY = "user_token"
+    private const val USER_ID_KEY = "user_id"
     private const val USER_KEY = "saved_username"
     private const val PASS_KEY = "saved_password"
 
@@ -19,6 +20,12 @@ object SessionManager {
     }
 
     fun fetchToken(context: Context): String? = getPrefs(context).getString(TOKEN_KEY, null)
+
+    fun saveUserId(context: Context, userId: Int) {
+        getPrefs(context).edit { putInt(USER_ID_KEY, userId) }
+    }
+
+    fun fetchUserId(context: Context): Int = getPrefs(context).getInt(USER_ID_KEY, -1)
 
     fun saveCredentials(context: Context, user: String?, pass: String?) {
         getPrefs(context).edit {
@@ -33,6 +40,7 @@ object SessionManager {
     fun clearToken(context: Context) {
         getPrefs(context).edit {
             remove(TOKEN_KEY)
+            remove(USER_ID_KEY)
         }
     }
 

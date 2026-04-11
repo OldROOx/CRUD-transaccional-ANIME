@@ -23,6 +23,7 @@ import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 @Composable
 fun AnimeItem(
     anime: Anime,
+    currentUserId: Int,
     isFavorite: Boolean,
     onEdit: (Anime) -> Unit,
     onDelete: (Int) -> Unit,
@@ -66,7 +67,11 @@ fun AnimeItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onEdit(anime) }
+            .then(
+                if (anime.userId == currentUserId) {
+                    Modifier.clickable { onEdit(anime) }
+                } else Modifier
+            )
     ) {
         Column {
             AsyncImage(
@@ -109,11 +114,13 @@ fun AnimeItem(
                             tint = if (isFavorite) Color.Red else Color.Gray
                         )
                     }
-                    IconButton(onClick = { onEdit(anime) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar")
-                    }
-                    IconButton(onClick = { onDelete(anime.id) }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Borrar")
+                    if (anime.userId == currentUserId) {
+                        IconButton(onClick = { onEdit(anime) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar")
+                        }
+                        IconButton(onClick = { onDelete(anime.id) }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Borrar")
+                        }
                     }
                 }
             }

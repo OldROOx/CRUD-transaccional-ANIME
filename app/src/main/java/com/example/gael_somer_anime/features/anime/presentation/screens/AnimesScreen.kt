@@ -5,8 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -78,11 +77,68 @@ fun AnimesScreen(
                 Text(text = uiState.error!!)
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(uiState.animes) { anime ->
+                    // Sección "Mis Animes" (Colapsable)
+                    item {
+                        Surface(
+                            onClick = { animesViewModel.toggleMyAnimesExpansion() },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Mis Animes (${uiState.myAnimes.size})",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = if (uiState.isMyAnimesExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = if (uiState.isMyAnimesExpanded) "Colapsar" else "Expandir"
+                                )
+                            }
+                        }
+                    }
+
+                    if (uiState.isMyAnimesExpanded) {
+                        items(uiState.myAnimes) { anime ->
+                            val isFav = favState.favorites.any { it.id == anime.id }
+                            AnimeItem(
+                                anime = anime,
+                                currentUserId = uiState.currentUserId,
+                                isFavorite = isFav,
+                                onEdit = { animesViewModel.onOpenDialog(anime) },
+                                onDelete = { animesViewModel.deleteAnime(anime.id) },
+                                onFavoriteToggle = {
+                                    favoritesViewModel.toggleFavorite(
+                                        Favorite(anime.id, anime.titulo, anime.genero, anime.anio, anime.descripcion)
+                                    )
+                                },
+                                onWatchlistToggle = {
+                                    watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
+                                }
+                            )
+                        }
+                    }
+
+                    // Separador
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Todos los Animes",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+
+                    // Todos los demás
+                    items(uiState.otherAnimes) { anime ->
                         val isFav = favState.favorites.any { it.id == anime.id }
-                        
                         AnimeItem(
                             anime = anime,
+                            currentUserId = uiState.currentUserId,
                             isFavorite = isFav,
                             onEdit = { animesViewModel.onOpenDialog(anime) },
                             onDelete = { animesViewModel.deleteAnime(anime.id) },

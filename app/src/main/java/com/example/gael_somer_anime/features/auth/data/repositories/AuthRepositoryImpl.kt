@@ -23,6 +23,7 @@ class AuthRepositoryImpl @Inject constructor(
         return if (response.isSuccessful) {
             response.body()?.let {
                 SessionManager.saveToken(applicationContext, it.accessToken)
+                SessionManager.saveUserId(applicationContext, it.user.id)
                 it.toDomain()
             }
         } else null
@@ -47,4 +48,5 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun getSavedUser(): String? = SessionManager.getSavedUser(applicationContext)
     override fun getSavedPass(): String? = SessionManager.getSavedPass(applicationContext)
+    override fun getCurrentUserId(): Int = SessionManager.fetchUserId(applicationContext)
 }

@@ -11,6 +11,7 @@ import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUs
 import com.example.gael_somer_anime.features.anime.domain.usecases.GetAnimesUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UpdateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UploadAnimeImageUseCase
+import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,7 @@ class AnimesViewModel @Inject constructor(
     private val updateAnimeUseCase: UpdateAnimeUseCase,
     private val deleteAnimeUseCase: DeleteAnimeUseCase,
     private val uploadAnimeImageUseCase: UploadAnimeImageUseCase,
+    private val authRepository: AuthRepository,
     private val shakeDetector: ShakeDetector,
     private val vibrationManager: VibrationManager
 ) : ViewModel() {
@@ -37,7 +39,11 @@ class AnimesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AnimesUiState())
     val uiState: StateFlow<AnimesUiState> = _uiState.asStateFlow()
 
-    init { observeAnimes() }
+    init {
+        val currentUserId = authRepository.getCurrentUserId()
+        _uiState.update { it.copy(currentUserId = currentUserId) }
+        observeAnimes()
+    }
 
     private fun observeAnimes() {
         viewModelScope.launch {
@@ -47,9 +53,20 @@ class AnimesViewModel @Inject constructor(
                     _uiState.update { it.copy(error = "Error al cargar los animes: ${e.message}", isLoading = false) }
                 }
                 .collectLatest { animeList ->
-                    _uiState.update { it.copy(animes = animeList, isLoading = false) }
+                    _uiState.update { state ->
+                        state.copy(
+                            animes = animeList,
+                            myAnimes = animeList.filter { it.userId == state.currentUserId },
+                            otherAnimes = animeList.filter { it.userId != state.currentUserId },
+                            isLoading = false
+                        )
+                    }
                 }
         }
+    }
+
+    fun toggleMyAnimesExpansion() {
+        _uiState.update { it.copy(isMyAnimesExpanded = !it.isMyAnimesExpanded) }
     }
 
     fun startShakeDetection() {
@@ -183,6 +200,10 @@ class AnimesViewModel @Inject constructor(
 
 data class AnimesUiState(
     val animes: List<Anime> = emptyList(),
+    val myAnimes: List<Anime> = emptyList(),
+    val otherAnimes: List<Anime> = emptyList(),
+    val isMyAnimesExpanded: Boolean = true,
+    val currentUserId: Int = -1,
     val isLoading: Boolean = false,
     val error: String? = null,
     val showDialog: Boolean = false,

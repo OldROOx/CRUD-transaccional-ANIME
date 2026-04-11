@@ -10,6 +10,7 @@ fun AnimeResponseDto.toDomain(): Anime {
         genero = genero,
         anio = anio,
         descripcion = descripcion,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        userId = userId
     )
 }

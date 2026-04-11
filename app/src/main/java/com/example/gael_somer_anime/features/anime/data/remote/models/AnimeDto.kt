@@ -16,5 +16,6 @@ data class AnimeResponseDto(
     @SerializedName("año") val anio: Int,
     val descripcion: String,
     @SerializedName("image_url") val imageUrl: String?,
+    @SerializedName("user_id") val userId: Int,
     @SerializedName("created_at") val createdAt: String
 )

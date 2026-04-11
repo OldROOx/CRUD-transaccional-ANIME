@@ -6,5 +6,6 @@ data class Anime(
     val genero: String,
     val anio: Int,
     val descripcion: String,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val userId: Int
 )
