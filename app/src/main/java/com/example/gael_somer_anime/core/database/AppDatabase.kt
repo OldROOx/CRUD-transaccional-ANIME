@@ -9,7 +9,7 @@ import com.example.gael_somer_anime.features.favorites.data.local.entities.Favor
 import com.example.gael_somer_anime.features.watchlist.data.local.dao.WatchlistDao
 import com.example.gael_somer_anime.features.watchlist.data.local.entities.WatchlistEntity
 
-@Database(entities = [AnimeEntity::class, WatchlistEntity::class, FavoriteEntity::class], version = 4, exportSchema = false)
+@Database(entities = [AnimeEntity::class, WatchlistEntity::class, FavoriteEntity::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun animeDao(): AnimeDao
     abstract fun watchlistDao(): WatchlistDao

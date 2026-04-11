@@ -9,6 +9,10 @@ import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.repositories.AnimeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
@@ -91,6 +95,24 @@ class AnimeRepositoryImpl @Inject constructor(
                 true
             } else false
         } catch (_: Exception) {
+            false
+        }
+    }
+
+    override suspend fun uploadImage(animeId: Int, file: File): Boolean {
+        return try {
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            val response = api.uploadAnimeImage(animeId, body)
+            if (response.isSuccessful) {
+                response.body()?.let { dto ->
+                    dao.insertAnime(dto.toEntity())
+                }
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
             false
         }
     }

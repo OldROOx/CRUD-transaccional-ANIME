@@ -10,7 +10,8 @@ fun AnimeEntity.toDomain(): Anime {
         titulo = titulo,
         genero = genero,
         anio = anio,
-        descripcion = descripcion
+        descripcion = descripcion,
+        imageUrl = imageUrl
     )
 }
 
@@ -20,7 +21,8 @@ fun Anime.toEntity(): AnimeEntity {
         titulo = titulo,
         genero = genero,
         anio = anio,
-        descripcion = descripcion
+        descripcion = descripcion,
+        imageUrl = imageUrl
     )
 }
 
@@ -30,6 +32,7 @@ fun AnimeResponseDto.toEntity(): AnimeEntity {
         titulo = titulo,
         genero = genero,
         anio = anio,
-        descripcion = descripcion
+        descripcion = descripcion,
+        imageUrl = imageUrl
     )
 }
