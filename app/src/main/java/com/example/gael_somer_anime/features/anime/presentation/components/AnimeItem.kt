@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 
 @Composable
@@ -35,6 +36,13 @@ fun AnimeItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            AsyncImage(
+                model = anime.imageUrl ?: "https://via.placeholder.com/150",
+                contentDescription = anime.titulo,
+                modifier = Modifier.size(80.dp),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = "Título: ${anime.titulo}")
                 Text(text = "Género: ${anime.genero}")

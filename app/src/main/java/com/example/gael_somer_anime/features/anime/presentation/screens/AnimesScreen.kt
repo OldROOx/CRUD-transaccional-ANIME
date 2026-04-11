@@ -104,7 +104,8 @@ fun AnimesScreen(
         AnimeFormDialog(
             uiState = uiState,
             onFieldChange = { t, g, a, d -> animesViewModel.onFieldChange(t, g, a, d) },
-            onSave = { animesViewModel.onSaveAnime() },
+            onImageSelected = { uri -> animesViewModel.onImageSelected(uri) },
+            onSave = { file -> animesViewModel.onSaveAnime(file) },
             onDismiss = { animesViewModel.onCloseDialog() }
         )
 

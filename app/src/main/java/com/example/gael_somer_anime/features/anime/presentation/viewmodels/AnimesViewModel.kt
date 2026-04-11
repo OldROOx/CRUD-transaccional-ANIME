@@ -1,5 +1,6 @@
 package com.example.gael_somer_anime.features.anime.presentation.viewmodels
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gael_somer_anime.core.hardware.ShakeDetector
@@ -9,6 +10,7 @@ import com.example.gael_somer_anime.features.anime.domain.usecases.CreateAnimeUs
 import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.GetAnimesUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UpdateAnimeUseCase
+import com.example.gael_somer_anime.features.anime.domain.usecases.UploadAnimeImageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -26,6 +29,7 @@ class AnimesViewModel @Inject constructor(
     private val createAnimeUseCase: CreateAnimeUseCase,
     private val updateAnimeUseCase: UpdateAnimeUseCase,
     private val deleteAnimeUseCase: DeleteAnimeUseCase,
+    private val uploadAnimeImageUseCase: UploadAnimeImageUseCase,
     private val shakeDetector: ShakeDetector,
     private val vibrationManager: VibrationManager
 ) : ViewModel() {
@@ -81,6 +85,7 @@ class AnimesViewModel @Inject constructor(
                 genero = anime?.genero ?: "",
                 anio = anime?.anio?.toString() ?: "",
                 descripcion = anime?.descripcion ?: "",
+                imageUri = null,
                 tituloError = null, generoError = null, anioError = null, descripcionError = null
             )
         }
@@ -105,6 +110,10 @@ class AnimesViewModel @Inject constructor(
         }
     }
 
+    fun onImageSelected(uri: Uri?) {
+        _uiState.update { it.copy(imageUri = uri) }
+    }
+
     private fun validateForm(): Boolean {
         val state = _uiState.value
         val tituloError = if (state.titulo.isBlank()) "El título es requerido" else null
@@ -121,7 +130,7 @@ class AnimesViewModel @Inject constructor(
         return tituloError == null && generoError == null && anioError == null && descripcionError == null
     }
 
-    fun onSaveAnime() {
+    fun onSaveAnime(imageFile: File? = null) {
         if (!validateForm()) {
             vibrationManager.vibrateError()
             return
@@ -131,11 +140,17 @@ class AnimesViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                if (currentState.selectedAnime == null) {
+                val anime = if (currentState.selectedAnime == null) {
                     createAnimeUseCase(currentState.titulo, currentState.genero, anioInt, currentState.descripcion)
                 } else {
                     updateAnimeUseCase(currentState.selectedAnime.id, currentState.titulo, currentState.genero, anioInt, currentState.descripcion)
                 }
+                
+                // Si se creó/actualizó correctamente y hay una imagen, subirla
+                if (anime != null && imageFile != null) {
+                    uploadAnimeImageUseCase(anime.id, imageFile)
+                }
+
                 vibrationManager.vibrateSuccess()
                 onCloseDialog()
             } catch (e: Exception) {
@@ -176,6 +191,7 @@ data class AnimesUiState(
     val genero: String = "",
     val anio: String = "",
     val descripcion: String = "",
+    val imageUri: Uri? = null,
     val tituloError: String? = null,
     val generoError: String? = null,
     val anioError: String? = null,

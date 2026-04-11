@@ -9,5 +9,6 @@ data class AnimeEntity(
     val titulo: String,
     val genero: String,
     val anio: Int,
-    val descripcion: String
+    val descripcion: String,
+    val imageUrl: String?
 )

@@ -7,13 +7,9 @@ import com.example.gael_somer_anime.features.auth.data.remote.models.LoginRespon
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistRequestDto
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistResponseDto
+import okhttp3.MultipartBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface AnimeApiService {
     @POST("api/users/login")
@@ -33,6 +29,13 @@ interface AnimeApiService {
 
     @DELETE("api/animes/{id}")
     suspend fun deleteAnime(@Path("id") id: Int): Response<Unit>
+
+    @Multipart
+    @POST("api/animes/{id}/upload")
+    suspend fun uploadAnimeImage(
+        @Path("id") id: Int,
+        @Part file: MultipartBody.Part
+    ): Response<AnimeResponseDto>
 
     // Watchlist
     @POST("api/watchlist/")
