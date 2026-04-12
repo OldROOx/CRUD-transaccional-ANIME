@@ -27,6 +27,7 @@ import com.example.gael_somer_anime.features.watchlist.presentation.viewmodels.W
 fun AnimesScreen(
     onNavToFavorites: () -> Unit,
     onNavToWatchlist: () -> Unit,
+    onNavToTags: () -> Unit,
     animesViewModel: AnimesViewModel = hiltViewModel(),
     favoritesViewModel: FavoritesViewModel = hiltViewModel(),
     watchlistViewModel: WatchlistViewModel = hiltViewModel()
@@ -57,6 +58,13 @@ fun AnimesScreen(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
                     Icon(Icons.Filled.Favorite, contentDescription = "Ver Favoritos")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                FloatingActionButton(
+                    onClick = onNavToTags,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Icon(Icons.Filled.NotificationsActive, contentDescription = "Mis Suscripciones")
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 FloatingActionButton(onClick = { animesViewModel.onOpenDialog() }) {
