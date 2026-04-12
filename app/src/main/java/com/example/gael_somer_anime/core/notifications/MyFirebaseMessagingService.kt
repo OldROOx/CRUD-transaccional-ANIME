@@ -24,8 +24,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         
-        val title = message.notification?.title ?: message.data["titulo"] ?: "Nuevo Anime"
-        val body = message.notification?.body ?: "¡Se ha publicado algo que te interesa!"
+        val title = message.data["titulo"] ?: message.notification?.title ?: "Nuevo Anime"
+        val body = message.data["cuerpo"] ?: message.notification?.body ?: "¡Se ha publicado algo que te interesa!"
         
         sendNotification(title, body)
     }
