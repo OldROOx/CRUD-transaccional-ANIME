@@ -86,18 +86,19 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun fetchAndStoreFcmToken() {
+        Log.d("FCM", "Iniciando recuperación de token...")
         try {
             FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                 if (!task.isSuccessful) {
-                    Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                    Log.e("FCM", "ERROR: No se pudo obtener el token", task.exception)
                     return@addOnCompleteListener
                 }
                 val token = task.result
-                Log.d("FCM", "Token recuperado: $token")
+                Log.i("FCM", "TOKEN RECUPERADO EXITOSAMENTE: $token")
                 SessionManager.saveFcmToken(this, token)
             }
         } catch (e: Exception) {
-            Log.e("FCM", "Error al obtener token FCM: ${e.message}")
+            Log.e("FCM", "ERROR CRÍTICO: ${e.message}")
         }
     }
 }
