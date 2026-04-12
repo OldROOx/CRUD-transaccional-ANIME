@@ -29,7 +29,7 @@ import java.io.FileOutputStream
 @Composable
 fun AnimeFormDialog(
     uiState: AnimesUiState,
-    onFieldChange: (String?, String?, String?, String?) -> Unit,
+    onFieldChange: (String?, String?, String?, String?, String?) -> Unit,
     onImageSelected: (Uri?) -> Unit,
     onSave: (File?) -> Unit,
     onDismiss: () -> Unit
@@ -51,7 +51,7 @@ fun AnimeFormDialog(
                 Column {
                     OutlinedTextField(
                         value = uiState.titulo,
-                        onValueChange = { onFieldChange(it, null, null, null) },
+                        onValueChange = { onFieldChange(it, null, null, null, null) },
                         label = { Text("Título") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.tituloError != null,
@@ -60,7 +60,7 @@ fun AnimeFormDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = uiState.genero,
-                        onValueChange = { onFieldChange(null, it, null, null) },
+                        onValueChange = { onFieldChange(null, it, null, null, null) },
                         label = { Text("Género") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = uiState.generoError != null,
@@ -69,7 +69,7 @@ fun AnimeFormDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = uiState.anio,
-                        onValueChange = { onFieldChange(null, null, it, null) },
+                        onValueChange = { onFieldChange(null, null, it, null, null) },
                         label = { Text("Año") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
@@ -79,12 +79,21 @@ fun AnimeFormDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = uiState.descripcion,
-                        onValueChange = { onFieldChange(null, null, null, it) },
+                        onValueChange = { onFieldChange(null, null, null, it, null) },
                         label = { Text("Descripción") },
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 4,
                         isError = uiState.descripcionError != null,
                         supportingText = { uiState.descripcionError?.let { Text(it) } }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = uiState.tags,
+                        onValueChange = { onFieldChange(null, null, null, null, it) },
+                        label = { Text("Tags") },
+                        placeholder = { Text("accion, romance, comedia...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        supportingText = { Text("Separa los tags con coma") }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(

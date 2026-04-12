@@ -10,6 +10,7 @@ object SessionManager {
     private const val USER_ID_KEY = "user_id"
     private const val USER_KEY = "saved_username"
     private const val PASS_KEY = "saved_password"
+    private const val FCM_TOKEN_KEY = "fcm_token"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -41,8 +42,15 @@ object SessionManager {
         getPrefs(context).edit {
             remove(TOKEN_KEY)
             remove(USER_ID_KEY)
+            remove(FCM_TOKEN_KEY)
         }
     }
+
+    fun saveFcmToken(context: Context, token: String?) {
+        getPrefs(context).edit { putString(FCM_TOKEN_KEY, token) }
+    }
+
+    fun fetchFcmToken(context: Context): String? = getPrefs(context).getString(FCM_TOKEN_KEY, null)
 
     fun clearAll(context: Context) {
         getPrefs(context).edit { clear() }

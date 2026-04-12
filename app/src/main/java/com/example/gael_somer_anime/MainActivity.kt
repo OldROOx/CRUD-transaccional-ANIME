@@ -1,25 +1,46 @@
 package com.example.gael_somer_anime
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.gael_somer_anime.core.navigation.*
 import com.example.gael_somer_anime.core.network.SessionManager
+import com.google.firebase.messaging.FirebaseMessaging
 import com.example.gael_somer_anime.features.auth.presentation.components.Header
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("FCM", "Permiso de notificaciones concedido")
+        } else {
+            Log.d("FCM", "Permiso de notificaciones denegado")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        requestNotificationPermission()
+        fetchAndStoreFcmToken()
 
         setContent {
             Gael_somer_animeTheme {
@@ -51,6 +72,32 @@ class MainActivity : FragmentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    private fun fetchAndStoreFcmToken() {
+        try {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                    return@addOnCompleteListener
+                }
+                val token = task.result
+                Log.d("FCM", "Token recuperado: $token")
+                SessionManager.saveFcmToken(this, token)
+            }
+        } catch (e: Exception) {
+            Log.e("FCM", "Error al obtener token FCM: ${e.message}")
         }
     }
 }

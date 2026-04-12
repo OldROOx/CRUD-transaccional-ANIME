@@ -7,5 +7,6 @@ data class Anime(
     val anio: Int,
     val descripcion: String,
     val imageUrl: String?,
-    val userId: Int
+    val userId: Int,
+    val tags: String = "" // Tags separados por coma
 )

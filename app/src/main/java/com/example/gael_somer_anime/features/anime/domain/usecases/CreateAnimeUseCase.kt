@@ -4,6 +4,6 @@ import com.example.gael_somer_anime.features.anime.domain.repositories.AnimeRepo
 import javax.inject.Inject
 
 class CreateAnimeUseCase @Inject constructor(private val repository: AnimeRepository) {
-    suspend operator fun invoke(titulo: String, genero: String, anio: Int, descripcion: String) =
-        repository.createAnime(titulo, genero, anio, descripcion)
+    suspend operator fun invoke(titulo: String, genero: String, anio: Int, descripcion: String, tags: String = "") =
+        repository.createAnime(titulo, genero, anio, descripcion, tags)
 }

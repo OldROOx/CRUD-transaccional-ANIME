@@ -1,7 +1,9 @@
 package com.example.gael_somer_anime.features.anime.presentation.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Close
@@ -9,6 +11,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +28,12 @@ fun AnimeItem(
     anime: Anime,
     currentUserId: Int,
     isFavorite: Boolean,
+    subscribedTags: List<String> = emptyList(),
     onEdit: (Anime) -> Unit,
     onDelete: (Int) -> Unit,
     onFavoriteToggle: () -> Unit,
-    onWatchlistToggle: () -> Unit
+    onWatchlistToggle: () -> Unit,
+    onTagClick: (String) -> Unit
 ) {
     var showFullImage by remember { mutableStateOf(false) }
 
@@ -93,6 +98,37 @@ fun AnimeItem(
                 Text(text = "Género: ${anime.genero}")
                 Text(text = "Año: ${anime.anio}")
                 Text(text = "Descripción: ${anime.descripcion}")
+
+                // Tags en chips de colores
+                val tagList = anime.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                if (tagList.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        tagList.forEach { tag ->
+                            val isSubscribed = subscribedTags.contains(tag)
+                            SuggestionChip(
+                                onClick = { onTagClick(tag) },
+                                label = { Text(text = "#$tag", style = MaterialTheme.typography.labelSmall) },
+                                icon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Tag,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = if (isSubscribed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
+                                    labelColor = if (isSubscribed) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

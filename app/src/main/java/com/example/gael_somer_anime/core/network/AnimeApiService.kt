@@ -5,6 +5,9 @@ import com.example.gael_somer_anime.features.anime.data.remote.models.AnimeRespo
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginRequestDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.LoginResponseDto
 import com.example.gael_somer_anime.features.auth.data.remote.models.RegisterRequestDto
+import com.example.gael_somer_anime.features.tags.data.remote.models.MyTagsResponse
+import com.example.gael_somer_anime.features.tags.data.remote.models.TagSubscribeRequest
+import com.example.gael_somer_anime.features.tags.data.remote.models.TagSubscriptionResponse
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistRequestDto
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistResponseDto
 import okhttp3.MultipartBody
@@ -46,4 +49,14 @@ interface AnimeApiService {
 
     @DELETE("api/watchlist/{anime_id}")
     suspend fun removeFromWatchlist(@Path("anime_id") animeId: Int): Response<Unit>
+
+    // Tags
+    @POST("api/tags/subscribe")
+    suspend fun subscribeToTag(@Body request: TagSubscribeRequest): Response<TagSubscriptionResponse>
+
+    @DELETE("api/tags/unsubscribe/{tag}")
+    suspend fun unsubscribeFromTag(@Path("tag") tag: String): Response<Unit>
+
+    @GET("api/tags/mine")
+    suspend fun getMyTags(): Response<MyTagsResponse>
 }

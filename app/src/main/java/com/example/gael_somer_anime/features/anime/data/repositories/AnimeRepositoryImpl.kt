@@ -55,8 +55,8 @@ class AnimeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String): Anime? {
-        val request = AnimeRequestDto(titulo, genero, anio, descripcion)
+    override suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String, tags: String): Anime? {
+        val request = AnimeRequestDto(titulo, genero, anio, descripcion, tags)
         return try {
             val response = api.createAnime(request)
             if (response.isSuccessful) {
@@ -71,8 +71,8 @@ class AnimeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String): Anime? {
-        val request = AnimeRequestDto(titulo, genero, anio, descripcion)
+    override suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String, tags: String): Anime? {
+        val request = AnimeRequestDto(titulo, genero, anio, descripcion, tags)
         return try {
             val response = api.updateAnime(id, request)
             if (response.isSuccessful) {

@@ -109,6 +109,7 @@ fun AnimesScreen(
                                 anime = anime,
                                 currentUserId = uiState.currentUserId,
                                 isFavorite = isFav,
+                                subscribedTags = uiState.subscribedTags,
                                 onEdit = { animesViewModel.onOpenDialog(anime) },
                                 onDelete = { animesViewModel.deleteAnime(anime.id) },
                                 onFavoriteToggle = {
@@ -118,7 +119,8 @@ fun AnimesScreen(
                                 },
                                 onWatchlistToggle = {
                                     watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
-                                }
+                                },
+                                onTagClick = { tag -> animesViewModel.onTagClick(tag) }
                             )
                         }
                     }
@@ -140,6 +142,7 @@ fun AnimesScreen(
                             anime = anime,
                             currentUserId = uiState.currentUserId,
                             isFavorite = isFav,
+                            subscribedTags = uiState.subscribedTags,
                             onEdit = { animesViewModel.onOpenDialog(anime) },
                             onDelete = { animesViewModel.deleteAnime(anime.id) },
                             onFavoriteToggle = {
@@ -149,7 +152,8 @@ fun AnimesScreen(
                             },
                             onWatchlistToggle = {
                                 watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
-                            }
+                            },
+                            onTagClick = { tag -> animesViewModel.onTagClick(tag) }
                         )
                     }
                 }
@@ -159,7 +163,7 @@ fun AnimesScreen(
         // Diálogo para añadir/editar anime
         AnimeFormDialog(
             uiState = uiState,
-            onFieldChange = { t, g, a, d -> animesViewModel.onFieldChange(t, g, a, d) },
+            onFieldChange = { t, g, a, d, tags -> animesViewModel.onFieldChange(t, g, a, d, tags) },
             onImageSelected = { uri -> animesViewModel.onImageSelected(uri) },
             onSave = { file -> animesViewModel.onSaveAnime(file) },
             onDismiss = { animesViewModel.onCloseDialog() }

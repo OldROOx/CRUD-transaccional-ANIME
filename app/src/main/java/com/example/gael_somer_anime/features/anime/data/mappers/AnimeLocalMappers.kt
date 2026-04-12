@@ -12,7 +12,8 @@ fun AnimeEntity.toDomain(): Anime {
         anio = anio,
         descripcion = descripcion,
         imageUrl = imageUrl,
-        userId = userId
+        userId = userId,
+        tags = tags
     )
 }
 
@@ -24,7 +25,8 @@ fun Anime.toEntity(): AnimeEntity {
         anio = anio,
         descripcion = descripcion,
         imageUrl = imageUrl,
-        userId = userId
+        userId = userId,
+        tags = tags
     )
 }
 
@@ -36,6 +38,7 @@ fun AnimeResponseDto.toEntity(): AnimeEntity {
         anio = anio,
         descripcion = descripcion,
         imageUrl = imageUrl,
-        userId = userId
+        userId = userId,
+        tags = tags ?: ""
     )
 }

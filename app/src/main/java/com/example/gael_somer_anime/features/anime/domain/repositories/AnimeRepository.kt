@@ -7,8 +7,8 @@ import java.io.File
 interface AnimeRepository {
     fun getAnimes(): Flow<List<Anime>>
     suspend fun syncAnimes(): Boolean
-    suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String): Anime?
-    suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String): Anime?
+    suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?
+    suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?
     suspend fun deleteAnime(id: Int): Boolean
     suspend fun uploadImage(animeId: Int, file: File): Boolean
 }

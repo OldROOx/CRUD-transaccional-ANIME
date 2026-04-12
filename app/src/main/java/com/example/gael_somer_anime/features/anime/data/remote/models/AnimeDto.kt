@@ -6,7 +6,8 @@ data class AnimeRequestDto(
     val titulo: String,
     val genero: String,
     @SerializedName("año") val anio: Int,
-    val descripcion: String
+    val descripcion: String,
+    val tags: String = ""  // Tags separados por coma: "accion,romance"
 )
 
 data class AnimeResponseDto(
@@ -16,6 +17,7 @@ data class AnimeResponseDto(
     @SerializedName("año") val anio: Int,
     val descripcion: String,
     @SerializedName("image_url") val imageUrl: String?,
+    val tags: String? = "",
     @SerializedName("user_id") val userId: Int,
     @SerializedName("created_at") val createdAt: String
 )

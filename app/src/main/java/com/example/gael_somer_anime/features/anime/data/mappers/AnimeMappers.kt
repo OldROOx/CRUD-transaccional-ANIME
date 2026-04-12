@@ -11,6 +11,7 @@ fun AnimeResponseDto.toDomain(): Anime {
         anio = anio,
         descripcion = descripcion,
         imageUrl = imageUrl,
-        userId = userId
+        userId = userId,
+        tags = tags ?: ""
     )
 }
