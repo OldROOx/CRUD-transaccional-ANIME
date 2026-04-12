@@ -31,7 +31,13 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun register(username: String, email: String, password: String): Boolean {
         val response = api.register(RegisterRequestDto(username, email, password))
-        return response.isSuccessful
+        return if (response.isSuccessful) {
+            response.body()?.let {
+                SessionManager.saveToken(applicationContext, it.accessToken)
+                SessionManager.saveUserId(applicationContext, it.user.id)
+            }
+            true
+        } else false
     }
 
     override fun logout() {

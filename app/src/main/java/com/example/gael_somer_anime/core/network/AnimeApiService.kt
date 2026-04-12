@@ -16,7 +16,7 @@ interface AnimeApiService {
     suspend fun login(@Body request: LoginRequestDto): Response<LoginResponseDto>
 
     @POST("api/users/register")
-    suspend fun register(@Body request: RegisterRequestDto): Response<Unit>
+    suspend fun register(@Body request: RegisterRequestDto): Response<LoginResponseDto>
 
     @GET("api/animes")
     suspend fun getAnimes(): Response<List<AnimeResponseDto>>
