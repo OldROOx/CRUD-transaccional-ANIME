@@ -218,6 +218,7 @@ fun AnimesScreen(
         if (uiState.selectedAnimeDetails != null) {
             AnimeDetailsDialog(
                 anime = uiState.selectedAnimeDetails!!,
+                onLike = { id -> animesViewModel.onLikeAnime(id) },
                 onDismiss = { animesViewModel.onCloseAnimeDetails() }
             )
         }

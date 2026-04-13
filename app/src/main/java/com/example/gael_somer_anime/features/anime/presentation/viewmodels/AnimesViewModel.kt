@@ -10,6 +10,7 @@ import com.example.gael_somer_anime.features.anime.domain.usecases.CreateAnimeUs
 import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.GetAnimeByIdUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.GetAnimesUseCase
+import com.example.gael_somer_anime.features.anime.domain.usecases.LikeAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.SyncAnimesUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UpdateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UploadAnimeImageUseCase
@@ -40,6 +41,7 @@ class AnimesViewModel @Inject constructor(
     private val deleteAnimeUseCase: DeleteAnimeUseCase,
     private val syncAnimesUseCase: SyncAnimesUseCase,
     private val getAnimeByIdUseCase: GetAnimeByIdUseCase,
+    private val likeAnimeUseCase: LikeAnimeUseCase,
     private val uploadAnimeImageUseCase: UploadAnimeImageUseCase,
     private val authRepository: AuthRepository,
     private val subscribeToTagUseCase: SubscribeToTagUseCase,
@@ -183,6 +185,20 @@ class AnimesViewModel @Inject constructor(
 
     fun onCloseAnimeDetails() {
         _uiState.update { it.copy(selectedAnimeDetails = null) }
+    }
+
+    fun onLikeAnime(animeId: Int) {
+        viewModelScope.launch {
+            val updatedAnime = likeAnimeUseCase(animeId)
+            if (updatedAnime != null) {
+                _uiState.update { state ->
+                    // Si el anime que recibió el like es el que está en detalles, lo actualizamos para que se vea el cambio de likes
+                    val newDetails = if (state.selectedAnimeDetails?.id == animeId) updatedAnime else state.selectedAnimeDetails
+                    state.copy(selectedAnimeDetails = newDetails)
+                }
+                vibrationManager.vibrateSuccess()
+            }
+        }
     }
 
     fun onFieldChange(titulo: String? = null, genero: String? = null, anio: String? = null, descripcion: String? = null, tags: String? = null) {

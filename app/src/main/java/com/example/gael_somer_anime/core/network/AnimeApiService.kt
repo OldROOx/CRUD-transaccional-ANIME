@@ -36,6 +36,9 @@ interface AnimeApiService {
     @DELETE("api/animes/{id}")
     suspend fun deleteAnime(@Path("id") id: Int): Response<Unit>
 
+    @POST("api/animes/{id}/like")
+    suspend fun likeAnime(@Path("id") id: Int): Response<AnimeResponseDto>
+
     @Multipart
     @POST("api/animes/{id}/upload")
     suspend fun uploadAnimeImage(

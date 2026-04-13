@@ -18,6 +18,7 @@ data class AnimeResponseDto(
     val descripcion: String,
     @SerializedName("image_url") val imageUrl: String?,
     val tags: String? = "",
+    val likes: Int = 0,
     @SerializedName("user_id") val userId: Int,
     @SerializedName("created_at") val createdAt: String
 )

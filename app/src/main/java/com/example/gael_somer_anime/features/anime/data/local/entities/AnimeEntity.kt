@@ -12,5 +12,6 @@ data class AnimeEntity(
     val descripcion: String,
     val imageUrl: String?,
     val userId: Int,
-    val tags: String = "" // Tags separados por coma
+    val tags: String = "", // Tags separados por coma
+    val likes: Int = 0
 )

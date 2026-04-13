@@ -11,5 +11,6 @@ interface AnimeRepository {
     suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?
     suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?
     suspend fun deleteAnime(id: Int): Boolean
+    suspend fun likeAnime(id: Int): Anime?
     suspend fun uploadImage(animeId: Int, file: File): Boolean
 }

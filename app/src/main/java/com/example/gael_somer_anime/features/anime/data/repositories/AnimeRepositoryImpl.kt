@@ -115,6 +115,21 @@ class AnimeRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun likeAnime(id: Int): Anime? {
+        return try {
+            val response = api.likeAnime(id)
+            if (response.isSuccessful) {
+                val domainAnime = response.body()?.toDomain()
+                domainAnime?.let {
+                    dao.insertAnime(it.toEntity())
+                }
+                domainAnime
+            } else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     override suspend fun uploadImage(animeId: Int, file: File): Boolean {
         return try {
             val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
