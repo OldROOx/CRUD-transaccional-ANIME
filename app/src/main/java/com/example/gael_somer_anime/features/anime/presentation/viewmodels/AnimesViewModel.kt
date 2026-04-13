@@ -58,6 +58,7 @@ class AnimesViewModel @Inject constructor(
         _uiState.update { it.copy(currentUserId = currentUserId) }
         observeAnimes()
         loadMyTags()
+        syncAnimes()
     }
 
     private fun loadMyTags() {
