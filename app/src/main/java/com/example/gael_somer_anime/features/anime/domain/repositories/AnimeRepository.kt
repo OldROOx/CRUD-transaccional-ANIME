@@ -6,6 +6,7 @@ import java.io.File
 
 interface AnimeRepository {
     fun getAnimes(): Flow<List<Anime>>
+    suspend fun getAnimeById(id: Int): Anime?
     suspend fun syncAnimes(): Boolean
     suspend fun createAnime(titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?
     suspend fun updateAnime(id: Int, titulo: String, genero: String, anio: Int, descripcion: String, tags: String = ""): Anime?

@@ -24,6 +24,9 @@ interface AnimeApiService {
     @GET("api/animes")
     suspend fun getAnimes(): Response<List<AnimeResponseDto>>
 
+    @GET("api/animes/{id}")
+    suspend fun getAnimeById(@Path("id") id: Int): Response<AnimeResponseDto>
+
     @POST("api/animes")
     suspend fun createAnime(@Body anime: AnimeRequestDto): Response<AnimeResponseDto>
 
@@ -57,6 +60,6 @@ interface AnimeApiService {
     @DELETE("api/tags/unsubscribe/{tag}")
     suspend fun unsubscribeFromTag(@Path("tag") tag: String): Response<Unit>
 
-    @GET("api/tags/mine")
+    @GET("api/tags/mine")-
     suspend fun getMyTags(): Response<MyTagsResponse>
 }

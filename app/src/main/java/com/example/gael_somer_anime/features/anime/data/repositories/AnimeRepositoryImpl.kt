@@ -37,6 +37,22 @@ class AnimeRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun getAnimeById(id: Int): Anime? {
+        // Fallback robusto: si se solicita un ID específico (ej. notificación), buscarlo.
+        return try {
+            val response = api.getAnimeById(id)
+            if (response.isSuccessful) {
+                val domainAnime = response.body()?.toDomain()
+                domainAnime?.let {
+                    dao.insertAnime(it.toEntity())
+                }
+                domainAnime
+            } else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     override suspend fun syncAnimes(): Boolean {
         return try {
             val response = api.getAnimes()
