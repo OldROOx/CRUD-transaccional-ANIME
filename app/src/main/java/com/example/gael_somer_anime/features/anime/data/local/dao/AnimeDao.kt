@@ -1,8 +1,13 @@
 package com.example.gael_somer_anime.features.anime.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import com.example.gael_somer_anime.features.anime.data.local.entities.AnimeEntity
 import kotlinx.coroutines.flow.Flow
+
+import androidx.room.Transaction
 
 @Dao
 interface AnimeDao {
@@ -20,4 +25,10 @@ interface AnimeDao {
 
     @Query("DELETE FROM animes")
     suspend fun clearAll()
+
+    @Transaction
+    suspend fun refreshAnimes(animes: List<AnimeEntity>) {
+        clearAll()
+        insertAnimes(animes)
+    }
 }

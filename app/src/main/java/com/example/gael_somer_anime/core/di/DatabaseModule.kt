@@ -15,32 +15,34 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
+abstract class DatabaseModule {
 
-    @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "anime_database"
-        )
-        .fallbackToDestructiveMigration()
-        .build()
-    }
+    companion object {
+        @Provides
+        @Singleton
+        fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+            return Room.databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "anime_database"
+            )
+            .fallbackToDestructiveMigration()
+            .build()
+        }
 
-    @Provides
-    fun provideAnimeDao(database: AppDatabase): AnimeDao {
-        return database.animeDao()
-    }
+        @Provides
+        fun provideAnimeDao(database: AppDatabase): AnimeDao {
+            return database.animeDao()
+        }
 
-    @Provides
-    fun provideWatchlistDao(database: AppDatabase): WatchlistDao {
-        return database.watchlistDao()
-    }
+        @Provides
+        fun provideWatchlistDao(database: AppDatabase): WatchlistDao {
+            return database.watchlistDao()
+        }
 
-    @Provides
-    fun provideFavoriteDao(database: AppDatabase): FavoriteDao {
-        return database.favoriteDao()
+        @Provides
+        fun provideFavoriteDao(database: AppDatabase): FavoriteDao {
+            return database.favoriteDao()
+        }
     }
 }

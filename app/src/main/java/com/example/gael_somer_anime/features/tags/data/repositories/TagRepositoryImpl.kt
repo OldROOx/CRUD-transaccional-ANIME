@@ -13,7 +13,7 @@ class TagRepositoryImpl @Inject constructor(
         return try {
             val response = api.subscribeToTag(TagSubscribeRequest(tag, fcmToken))
             response.isSuccessful
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -22,7 +22,7 @@ class TagRepositoryImpl @Inject constructor(
         return try {
             val response = api.unsubscribeFromTag(tag)
             response.isSuccessful
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
@@ -35,7 +35,7 @@ class TagRepositoryImpl @Inject constructor(
             } else {
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }

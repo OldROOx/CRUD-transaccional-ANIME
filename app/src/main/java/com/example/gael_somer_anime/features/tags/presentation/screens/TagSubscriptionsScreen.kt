@@ -1,6 +1,16 @@
 package com.example.gael_somer_anime.features.tags.presentation.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -8,8 +18,23 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,7 +49,6 @@ fun TagSubscriptionsScreen(
     viewModel: TagSubscriptionsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var newTag by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -48,7 +72,6 @@ fun TagSubscriptionsScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Sección para agregar nuevo Tag
             Text(
                 text = "Seguir nueva categoría",
                 style = MaterialTheme.typography.titleMedium,
@@ -61,18 +84,15 @@ fun TagSubscriptionsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
-                    value = newTag,
-                    onValueChange = { newTag = it },
+                    value = uiState.newTag,
+                    onValueChange = { viewModel.onNewTagChange(it) },
                     label = { Text("Ej. Acción, Comedia...") },
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = {
-                        viewModel.subscribe(newTag)
-                        newTag = ""
-                    },
+                    onClick = { viewModel.subscribe() },
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
@@ -81,7 +101,7 @@ fun TagSubscriptionsScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Divider()
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(

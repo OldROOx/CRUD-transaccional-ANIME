@@ -15,29 +15,31 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
+abstract class NetworkModule {
 
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(context))
-            .build()
-    }
+    companion object {
+        @Provides
+        @Singleton
+        fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
+            return OkHttpClient.Builder()
+                .addInterceptor(AuthInterceptor(context))
+                .build()
+        }
 
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("http://23.21.225.98:8000/")
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
+        @Provides
+        @Singleton
+        fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+            return Retrofit.Builder()
+                .baseUrl("http://23.21.225.98:8000/")
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+        }
 
-    @Provides
-    @Singleton
-    fun provideAnimeApiService(retrofit: Retrofit): AnimeApiService {
-        return retrofit.create(AnimeApiService::class.java)
+        @Provides
+        @Singleton
+        fun provideAnimeApiService(retrofit: Retrofit): AnimeApiService {
+            return retrofit.create(AnimeApiService::class.java)
+        }
     }
 }

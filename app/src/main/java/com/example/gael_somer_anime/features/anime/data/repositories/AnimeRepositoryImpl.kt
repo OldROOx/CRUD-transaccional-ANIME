@@ -13,6 +13,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import android.util.Log
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
@@ -29,16 +30,16 @@ class AnimeRepositoryImpl @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     val dtos = response.body()!!
                     val entities = dtos.map { it.toEntity() }
-                    dao.clearAll()
-                    dao.insertAnimes(entities)
+                    dao.refreshAnimes(entities)
+                } else {
+                    Log.e("AnimeRepo", "Error en API getAnimes: ${response.code()} - ${response.message()}")
                 }
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                Log.e("AnimeRepo", "Excepción en getAnimes: ${e.message}", e)
             }
         }
 
     override suspend fun getAnimeById(id: Int): Anime? {
-        // Fallback robusto: si se solicita un ID específico (ej. notificación), buscarlo.
         return try {
             val response = api.getAnimeById(id)
             if (response.isSuccessful) {
@@ -59,14 +60,13 @@ class AnimeRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let { dtos ->
                     val entities = dtos.map { it.toEntity() }
-                    dao.clearAll()
-                    dao.insertAnimes(entities)
+                    dao.refreshAnimes(entities)
                     true
                 } ?: false
             } else {
                 false
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             false
         }
     }
@@ -143,7 +143,7 @@ class AnimeRepositoryImpl @Inject constructor(
             } else {
                 false
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }

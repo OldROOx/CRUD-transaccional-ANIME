@@ -1,6 +1,9 @@
 package com.example.gael_somer_anime.features.watchlist.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import com.example.gael_somer_anime.features.watchlist.data.local.entities.WatchlistEntity
 import kotlinx.coroutines.flow.Flow
 

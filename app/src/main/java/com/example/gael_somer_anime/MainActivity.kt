@@ -1,36 +1,41 @@
 package com.example.gael_somer_anime
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.gael_somer_anime.core.navigation.*
+import com.example.gael_somer_anime.core.navigation.AppNavHost
+import com.example.gael_somer_anime.core.navigation.Screens
 import com.example.gael_somer_anime.core.network.SessionManager
 import com.example.gael_somer_anime.core.services.ImageCacheScheduler
-import com.example.gael_somer_anime.core.services.ImageCacheService
-import com.google.firebase.messaging.FirebaseMessaging
 import com.example.gael_somer_anime.features.auth.presentation.components.Header
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
-
-import android.content.Intent
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
-    private var initialAnimeId by mutableStateOf<String?>(null)
+    @Inject
+    lateinit var imageCacheScheduler: ImageCacheScheduler
+
+    private val viewModel: MainViewModel by viewModels()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -48,12 +53,11 @@ class MainActivity : FragmentActivity() {
         requestNotificationPermission()
         fetchAndStoreFcmToken()
 
-        initialAnimeId = intent.getStringExtra("anime_id")
+        viewModel.setInitialAnimeId(intent.getStringExtra("anime_id"))
 
-        // Si hay sesión activa, iniciar caché inmediato + programar periódico
-        if (SessionManager.fetchToken(this) != null) {
-            ImageCacheService.start(this)
-            ImageCacheScheduler.schedule(this)
+        if (viewModel.isUserLoggedIn()) {
+            imageCacheScheduler.runNow()
+            imageCacheScheduler.schedule()
         }
 
         setContent {
@@ -61,11 +65,7 @@ class MainActivity : FragmentActivity() {
                 val navController = rememberNavController()
                 val navBackStack by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStack?.destination?.route
-
-                val startDest = remember {
-                    if (SessionManager.fetchToken(this@MainActivity) != null) Screens.Home.route
-                    else Screens.Login.route
-                }
+                val initialAnimeId by viewModel.initialAnimeId.collectAsState()
 
                 Scaffold(
                     topBar = {
@@ -81,9 +81,9 @@ class MainActivity : FragmentActivity() {
                     Box(modifier = Modifier.padding(padding)) {
                         AppNavHost(
                             navController = navController,
-                            startDestination = startDest,
+                            startDestination = viewModel.getStartDestination(),
                             initialAnimeId = initialAnimeId,
-                            onAnimeIdConsumed = { initialAnimeId = null }
+                            onAnimeIdConsumed = { viewModel.consumeInitialAnimeId() }
                         )
                     }
                 }
@@ -102,25 +102,18 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun fetchAndStoreFcmToken() {
-        Log.d("FCM", "Iniciando recuperación de token...")
-        try {
-            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.e("FCM", "ERROR: No se pudo obtener el token", task.exception)
-                    return@addOnCompleteListener
-                }
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
                 val token = task.result
-                Log.i("FCM", "TOKEN RECUPERADO EXITOSAMENTE: $token")
-                SessionManager.saveFcmToken(this, token)
+                val prefs = getSharedPreferences("anime_prefs", MODE_PRIVATE)
+                SessionManager.saveFcmToken(prefs, token)
             }
-        } catch (e: Exception) {
-            Log.e("FCM", "ERROR CRÍTICO: ${e.message}")
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        initialAnimeId = intent.getStringExtra("anime_id")
+        viewModel.setInitialAnimeId(intent.getStringExtra("anime_id"))
     }
 }

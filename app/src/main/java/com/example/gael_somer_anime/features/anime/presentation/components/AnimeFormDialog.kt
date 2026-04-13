@@ -1,40 +1,37 @@
 package com.example.gael_somer_anime.features.anime.presentation.components
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesUiState
-import java.io.File
-import java.io.FileOutputStream
 
 @Composable
 fun AnimeFormDialog(
     uiState: AnimesUiState,
     onFieldChange: (String?, String?, String?, String?, String?) -> Unit,
     onImageSelected: (Uri?) -> Unit,
-    onSave: (File?) -> Unit,
+    onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -45,7 +42,10 @@ fun AnimeFormDialog(
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
-                Text(text = if (uiState.selectedAnime == null) "Nuevo Anime" else "Editar Anime")
+                Text(
+                    text = if (uiState.selectedAnime == null) "Nuevo Anime" else "Editar Anime",
+                    style = MaterialTheme.typography.headlineSmall
+                )
             },
             text = {
                 Column {
@@ -121,20 +121,7 @@ fun AnimeFormDialog(
                     TextButton(onClick = onDismiss) {
                         Text("Cancelar")
                     }
-                    Button(
-                        onClick = {
-                            val file = uiState.imageUri?.let { uri ->
-                                val tempFile = File(context.cacheDir, "temp_upload_${System.currentTimeMillis()}.jpg")
-                                context.contentResolver.openInputStream(uri)?.use { input ->
-                                    FileOutputStream(tempFile).use { output ->
-                                        input.copyTo(output)
-                                    }
-                                }
-                                tempFile
-                            }
-                            onSave(file)
-                        }
-                    ) {
+                    Button(onClick = onSave) {
                         Text("Guardar")
                     }
                 }

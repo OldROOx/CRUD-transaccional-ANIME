@@ -2,7 +2,14 @@ package com.example.gael_somer_anime.features.anime.presentation.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
@@ -13,14 +20,11 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.gael_somer_anime.core.services.ImageCacheHelper
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 
 @Composable
@@ -29,6 +33,7 @@ fun AnimeItem(
     currentUserId: Int,
     isFavorite: Boolean,
     subscribedTags: List<String> = emptyList(),
+    imageModel: Any,
     onEdit: (Anime) -> Unit,
     onDelete: (Int) -> Unit,
     onFavoriteToggle: () -> Unit,
@@ -36,8 +41,6 @@ fun AnimeItem(
     onTagClick: (String) -> Unit,
     onViewDetails: (Int) -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,7 +49,7 @@ fun AnimeItem(
     ) {
         Column {
             AsyncImage(
-                model = ImageCacheHelper.getImageModel(context, anime.id, anime.imageUrl),
+                model = imageModel,
                 contentDescription = anime.titulo,
                 modifier = Modifier
                     .fillMaxWidth()

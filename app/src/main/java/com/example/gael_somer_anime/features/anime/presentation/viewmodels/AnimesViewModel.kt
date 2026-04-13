@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gael_somer_anime.core.hardware.ShakeDetector
 import com.example.gael_somer_anime.core.hardware.VibrationManager
+import com.example.gael_somer_anime.core.services.ImageHelper
+import com.example.gael_somer_anime.core.util.FileUtil
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.usecases.CreateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUseCase
@@ -14,13 +16,11 @@ import com.example.gael_somer_anime.features.anime.domain.usecases.LikeAnimeUseC
 import com.example.gael_somer_anime.features.anime.domain.usecases.SyncAnimesUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UpdateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UploadAnimeImageUseCase
-import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
-import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.features.auth.domain.usecases.GetCurrentUserIdUseCase
+import com.example.gael_somer_anime.features.auth.domain.usecases.GetFcmTokenUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.GetMyTagsUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.SubscribeToTagUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.UnsubscribeFromTagUseCase
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -43,24 +42,28 @@ class AnimesViewModel @Inject constructor(
     private val getAnimeByIdUseCase: GetAnimeByIdUseCase,
     private val likeAnimeUseCase: LikeAnimeUseCase,
     private val uploadAnimeImageUseCase: UploadAnimeImageUseCase,
-    private val authRepository: AuthRepository,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+    private val getFcmTokenUseCase: GetFcmTokenUseCase,
     private val subscribeToTagUseCase: SubscribeToTagUseCase,
     private val unsubscribeFromTagUseCase: UnsubscribeFromTagUseCase,
     private val getMyTagsUseCase: GetMyTagsUseCase,
     private val shakeDetector: ShakeDetector,
     private val vibrationManager: VibrationManager,
-    @ApplicationContext private val context: Context
+    private val fileUtil: FileUtil,
+    private val imageHelper: ImageHelper
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AnimesUiState())
     val uiState: StateFlow<AnimesUiState> = _uiState.asStateFlow()
 
     init {
-        val currentUserId = authRepository.getCurrentUserId()
-        _uiState.update { it.copy(currentUserId = currentUserId) }
-        observeAnimes()
-        loadMyTags()
-        syncAnimes()
+        viewModelScope.launch {
+            val currentUserId = getCurrentUserIdUseCase()
+            _uiState.update { it.copy(currentUserId = currentUserId) }
+            observeAnimes()
+            loadMyTags()
+            syncAnimes()
+        }
     }
 
     private fun loadMyTags() {
@@ -79,7 +82,7 @@ class AnimesViewModel @Inject constructor(
                     vibrationManager.vibrateSuccess()
                 }
             } else {
-                val fcmToken = SessionManager.fetchFcmToken(context)
+                val fcmToken = getFcmTokenUseCase()
                 if (subscribeToTagUseCase(tag, fcmToken)) {
                     loadMyTags()
                     vibrationManager.vibrateSuccess()
@@ -170,7 +173,6 @@ class AnimesViewModel @Inject constructor(
         if (anime != null) {
             _uiState.update { it.copy(selectedAnimeDetails = anime) }
         } else {
-            // Fallback: Descargar el anime específicamente si no estaba en caché
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true) }
                 val fetchedAnime = getAnimeByIdUseCase(animeId)
@@ -184,7 +186,11 @@ class AnimesViewModel @Inject constructor(
     }
 
     fun onCloseAnimeDetails() {
-        _uiState.update { it.copy(selectedAnimeDetails = null) }
+        _uiState.update { it.copy(selectedAnimeDetails = null, showFullImage = false) }
+    }
+
+    fun setShowFullImage(show: Boolean) {
+        _uiState.update { it.copy(showFullImage = show) }
     }
 
     fun onLikeAnime(animeId: Int) {
@@ -192,7 +198,6 @@ class AnimesViewModel @Inject constructor(
             val updatedAnime = likeAnimeUseCase(animeId)
             if (updatedAnime != null) {
                 _uiState.update { state ->
-                    // Si el anime que recibió el like es el que está en detalles, lo actualizamos para que se vea el cambio de likes
                     val newDetails = if (state.selectedAnimeDetails?.id == animeId) updatedAnime else state.selectedAnimeDetails
                     state.copy(selectedAnimeDetails = newDetails)
                 }
@@ -237,29 +242,30 @@ class AnimesViewModel @Inject constructor(
         return tituloError == null && generoError == null && anioError == null && descripcionError == null
     }
 
-    fun onSaveAnime(imageFile: File? = null) {
+    fun onSaveAnime() {
         if (!validateForm()) {
             vibrationManager.vibrateError()
             return
         }
         val currentState = _uiState.value
         val anioInt = currentState.anio.toInt()
-        // Normalizar tags: minúsculas, sin espacios extra
         val normalizedTags = currentState.tags
             .split(",")
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
             .joinToString(",")
+        
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
+                val imageFile = currentState.imageUri?.let { fileUtil.uriToFile(it) }
+
                 val anime = if (currentState.selectedAnime == null) {
                     createAnimeUseCase(currentState.titulo, currentState.genero, anioInt, currentState.descripcion, normalizedTags)
                 } else {
                     updateAnimeUseCase(currentState.selectedAnime.id, currentState.titulo, currentState.genero, anioInt, currentState.descripcion, normalizedTags)
                 }
                 
-                // Si se creó/actualizó correctamente y hay una imagen, subirla
                 if (anime != null && imageFile != null) {
                     uploadAnimeImageUseCase(anime.id, imageFile)
                 }
@@ -292,6 +298,10 @@ class AnimesViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false) }
         }
     }
+
+    fun getImageModel(animeId: Int, remoteUrl: String?): Any {
+        return imageHelper.getImageModel(animeId, remoteUrl)
+    }
 }
 
 data class AnimesUiState(
@@ -317,5 +327,6 @@ data class AnimesUiState(
     val showRandomDialog: Boolean = false,
     val randomAnime: Anime? = null,
     val subscribedTags: List<String> = emptyList(),
-    val selectedAnimeDetails: Anime? = null
+    val selectedAnimeDetails: Anime? = null,
+    val showFullImage: Boolean = false
 )

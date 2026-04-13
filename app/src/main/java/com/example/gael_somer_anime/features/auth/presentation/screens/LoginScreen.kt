@@ -1,10 +1,25 @@
 package com.example.gael_somer_anime.features.auth.presentation.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -13,7 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.gael_somer_anime.core.hardware.BiometricManager
 import com.example.gael_somer_anime.features.auth.presentation.viewmodels.LoginViewModel
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface BiometricEntryPoint {
+    fun getBiometricManager(): BiometricManager
+}
 
 @Composable
 fun LoginScreen(
@@ -26,6 +52,10 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val authError by viewModel.authError.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val biometricManager = EntryPointAccessors.fromApplication(
+        context.applicationContext,
+        BiometricEntryPoint::class.java
+    ).getBiometricManager()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -69,8 +99,14 @@ fun LoginScreen(
                 onClick = {
                     val activity = context as? FragmentActivity
                     activity?.let {
-                        viewModel.authenticateWithBiometrics(it) {
-                            onLoginSuccess()
+                        if (biometricManager.canAuthenticate()) {
+                            biometricManager.authenticate(
+                                activity = it,
+                                onSuccess = { viewModel.onBiometricSuccess { onLoginSuccess() } },
+                                onError = { error -> viewModel.onBiometricError(error) }
+                            )
+                        } else {
+                            viewModel.onBiometricError("Biometría no disponible")
                         }
                     }
                 },

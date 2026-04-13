@@ -10,5 +10,6 @@ interface AuthRepository {
     fun saveCredentials(user: String, pass: String)
     fun getSavedUser(): String?
     fun getSavedPass(): String?
-    fun getCurrentUserId(): Int
+    suspend fun getCurrentUserId(): Int
+    fun getFcmToken(): String?
 }

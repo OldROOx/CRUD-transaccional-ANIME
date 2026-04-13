@@ -1,11 +1,8 @@
 package com.example.gael_somer_anime.core.di
 
-import com.example.gael_somer_anime.core.hardware.BiometricManager
-import com.example.gael_somer_anime.core.hardware.AndroidBiometricManagerImpl
-import com.example.gael_somer_anime.core.hardware.VibrationManager
-import com.example.gael_somer_anime.core.hardware.AndroidVibrationManagerImpl
-import com.example.gael_somer_anime.core.hardware.ShakeDetector
-import com.example.gael_somer_anime.core.hardware.AndroidShakeDetectorImpl
+import com.example.gael_somer_anime.core.hardware.*
+import com.example.gael_somer_anime.core.services.*
+import com.example.gael_somer_anime.core.util.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -33,4 +30,23 @@ abstract class HardwareModule {
     abstract fun bindShakeDetector(
         shakeDetectorImpl: AndroidShakeDetectorImpl
     ): ShakeDetector
+
+    @Binds
+    @Singleton
+    abstract fun bindFileUtil(
+        fileUtilImpl: AndroidFileUtilImpl
+    ): FileUtil
+
+    @Binds
+    @Singleton
+    abstract fun bindImageCacheScheduler(
+        imageCacheSchedulerImpl: AndroidImageCacheSchedulerImpl
+    ): ImageCacheScheduler
+
+    @Binds
+    @Singleton
+    abstract fun bindImageHelper(
+        imageHelperImpl: AndroidImageHelperImpl
+    ): ImageHelper
 }
+

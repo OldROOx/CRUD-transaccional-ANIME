@@ -12,7 +12,14 @@ import com.example.gael_somer_anime.features.watchlist.data.remote.models.Watchl
 import com.example.gael_somer_anime.features.watchlist.data.remote.models.WatchlistResponseDto
 import okhttp3.MultipartBody
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.POST
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.PUT
+import retrofit2.http.DELETE
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 
 interface AnimeApiService {
     @POST("api/users/login")
@@ -46,7 +53,6 @@ interface AnimeApiService {
         @Part file: MultipartBody.Part
     ): Response<AnimeResponseDto>
 
-    // Watchlist
     @POST("api/watchlist/")
     suspend fun addToWatchlist(@Body request: WatchlistRequestDto): Response<WatchlistResponseDto>
 
@@ -56,13 +62,12 @@ interface AnimeApiService {
     @DELETE("api/watchlist/{anime_id}")
     suspend fun removeFromWatchlist(@Path("anime_id") animeId: Int): Response<Unit>
 
-    // Tags
     @POST("api/tags/subscribe")
     suspend fun subscribeToTag(@Body request: TagSubscribeRequest): Response<TagSubscriptionResponse>
 
     @DELETE("api/tags/unsubscribe/{tag}")
     suspend fun unsubscribeFromTag(@Path("tag") tag: String): Response<Unit>
 
-    @GET("api/tags/mine")-
+    @GET("api/tags/mine")
     suspend fun getMyTags(): Response<MyTagsResponse>
 }

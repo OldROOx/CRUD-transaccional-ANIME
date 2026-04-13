@@ -3,13 +3,11 @@ package com.example.gael_somer_anime.features.tags.presentation.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gael_somer_anime.core.hardware.VibrationManager
-import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.features.auth.domain.usecases.GetFcmTokenUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.GetMyTagsUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.SubscribeToTagUseCase
 import com.example.gael_somer_anime.features.tags.domain.usecases.UnsubscribeFromTagUseCase
-import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,11 +21,15 @@ class TagSubscriptionsViewModel @Inject constructor(
     private val subscribeToTagUseCase: SubscribeToTagUseCase,
     private val unsubscribeFromTagUseCase: UnsubscribeFromTagUseCase,
     private val vibrationManager: VibrationManager,
-    @ApplicationContext private val context: Context
+    private val getFcmTokenUseCase: GetFcmTokenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TagSubscriptionsUiState())
     val uiState: StateFlow<TagSubscriptionsUiState> = _uiState.asStateFlow()
+
+    fun onNewTagChange(newTag: String) {
+        _uiState.update { it.copy(newTag = newTag) }
+    }
 
     init {
         loadTags()
@@ -56,13 +58,15 @@ class TagSubscriptionsViewModel @Inject constructor(
         }
     }
 
-    fun subscribe(tag: String) {
+    fun subscribe() {
+        val tag = _uiState.value.newTag
         if (tag.isBlank()) return
         
         viewModelScope.launch {
-            val fcmToken = SessionManager.fetchFcmToken(context)
+            val fcmToken = getFcmTokenUseCase()
             if (subscribeToTagUseCase(tag.trim().lowercase(), fcmToken)) {
                 vibrationManager.vibrateSuccess()
+                _uiState.update { it.copy(newTag = "") }
                 loadTags()
             } else {
                 vibrationManager.vibrateError()
@@ -73,6 +77,7 @@ class TagSubscriptionsViewModel @Inject constructor(
 
 data class TagSubscriptionsUiState(
     val tags: List<String> = emptyList(),
+    val newTag: String = "",
     val isLoading: Boolean = false,
     val error: String? = null
 )

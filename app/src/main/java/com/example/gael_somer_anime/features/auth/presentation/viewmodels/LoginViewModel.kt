@@ -1,9 +1,7 @@
 package com.example.gael_somer_anime.features.auth.presentation.viewmodels
 
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gael_somer_anime.core.hardware.BiometricManager
 import com.example.gael_somer_anime.core.hardware.VibrationManager
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
 import com.example.gael_somer_anime.features.auth.domain.usecases.LoginUseCase
@@ -18,7 +16,6 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val authRepository: AuthRepository,
-    private val biometricManager: BiometricManager,
     private val vibrationManager: VibrationManager
 ) : ViewModel() {
 
@@ -53,7 +50,7 @@ class LoginViewModel @Inject constructor(
                     _isLoading.value = false
                     _authError.value = "Usuario o contraseña incorrectos"
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 vibrationManager.vibrateError()
                 _isLoading.value = false
                 _authError.value = "Error de conexión"
@@ -61,22 +58,13 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun authenticateWithBiometrics(activity: FragmentActivity, onSuccess: () -> Unit) {
-        if (biometricManager.canAuthenticate()) {
-            biometricManager.authenticate(
-                activity = activity,
-                onSuccess = {
-                    performAutoLogin(onSuccess)
-                },
-                onError = { error ->
-                    vibrationManager.vibrateError()
-                    _authError.value = error
-                }
-            )
-        } else {
-            vibrationManager.vibrateError()
-            _authError.value = "Biometría no disponible"
-        }
+    fun onBiometricError(error: String) {
+        vibrationManager.vibrateError()
+        _authError.value = error
+    }
+
+    fun onBiometricSuccess(onSuccess: () -> Unit) {
+        performAutoLogin(onSuccess)
     }
 
     private fun performAutoLogin(onSuccess: () -> Unit) {
@@ -97,7 +85,7 @@ class LoginViewModel @Inject constructor(
                         _isLoading.value = false
                         _authError.value = "Sesión expirada. Ingrese contraseña."
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     vibrationManager.vibrateError()
                     _isLoading.value = false
                     _authError.value = "Error de conexión"

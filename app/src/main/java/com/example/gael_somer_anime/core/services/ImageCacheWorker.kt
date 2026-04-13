@@ -18,7 +18,8 @@ import java.net.URL
 class ImageCacheWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val imageHelper: ImageHelper
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -37,7 +38,7 @@ class ImageCacheWorker @AssistedInject constructor(
                 val imageUrl = anime.imageUrl
                 if (imageUrl.isNullOrBlank()) continue
 
-                val localFile = ImageCacheHelper.getLocalPath(applicationContext, anime.id)
+                val localFile = imageHelper.getLocalPath(anime.id)
 
                 if (localFile.exists() && localFile.length() > 0) continue
 

@@ -7,8 +7,9 @@ import okhttp3.Response
 class AuthInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val requestBuilder = chain.request().newBuilder()
+        val prefs = context.getSharedPreferences("anime_prefs", Context.MODE_PRIVATE)
 
-        SessionManager.fetchToken(context)?.let {
+        SessionManager.fetchToken(prefs)?.let {
             requestBuilder.addHeader("Authorization", "Bearer $it")
         }
 

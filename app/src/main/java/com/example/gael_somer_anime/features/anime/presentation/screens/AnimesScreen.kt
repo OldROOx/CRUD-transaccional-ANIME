@@ -1,14 +1,34 @@
 package com.example.gael_somer_anime.features.anime.presentation.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +58,6 @@ fun AnimesScreen(
     val uiState by animesViewModel.uiState.collectAsStateWithLifecycle()
     val favState by favoritesViewModel.uiState.collectAsStateWithLifecycle()
 
-    // Manejo del ciclo de vida del sensor de movimiento (Shake)
     DisposableEffect(Unit) {
         animesViewModel.startShakeDetection()
         onDispose {
@@ -46,7 +65,6 @@ fun AnimesScreen(
         }
     }
 
-    // Efecto para abrir el dialog automáticamente si recibimos un ID válido de notificación
     LaunchedEffect(initialAnimeId, uiState.animes) {
         if (initialAnimeId != null && uiState.animes.isNotEmpty()) {
             initialAnimeId.toIntOrNull()?.let { id ->
@@ -98,7 +116,6 @@ fun AnimesScreen(
                 Text(text = uiState.error!!)
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    // Sección "Mis Animes" (Colapsable)
                     item {
                         Surface(
                             onClick = { animesViewModel.toggleMyAnimesExpansion() },
@@ -131,6 +148,7 @@ fun AnimesScreen(
                                 currentUserId = uiState.currentUserId,
                                 isFavorite = isFav,
                                 subscribedTags = uiState.subscribedTags,
+                                imageModel = animesViewModel.getImageModel(anime.id, anime.imageUrl),
                                 onEdit = { animesViewModel.onOpenDialog(anime) },
                                 onDelete = { animesViewModel.deleteAnime(anime.id) },
                                 onFavoriteToggle = {
@@ -147,7 +165,6 @@ fun AnimesScreen(
                         }
                     }
 
-                    // Separador
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -157,7 +174,6 @@ fun AnimesScreen(
                         )
                     }
 
-                    // Todos los demás
                     items(uiState.otherAnimes) { anime ->
                         val isFav = favState.favorites.any { it.id == anime.id }
                         AnimeItem(
@@ -165,6 +181,7 @@ fun AnimesScreen(
                             currentUserId = uiState.currentUserId,
                             isFavorite = isFav,
                             subscribedTags = uiState.subscribedTags,
+                            imageModel = animesViewModel.getImageModel(anime.id, anime.imageUrl),
                             onEdit = { animesViewModel.onOpenDialog(anime) },
                             onDelete = { animesViewModel.deleteAnime(anime.id) },
                             onFavoriteToggle = {
@@ -183,16 +200,14 @@ fun AnimesScreen(
             }
         }
 
-        // Diálogo para añadir/editar anime
         AnimeFormDialog(
             uiState = uiState,
             onFieldChange = { t, g, a, d, tags -> animesViewModel.onFieldChange(t, g, a, d, tags) },
             onImageSelected = { uri -> animesViewModel.onImageSelected(uri) },
-            onSave = { file -> animesViewModel.onSaveAnime(file) },
+            onSave = { animesViewModel.onSaveAnime() },
             onDismiss = { animesViewModel.onCloseDialog() }
         )
 
-        // Diálogo de recomendación aleatoria (Shake)
         if (uiState.showRandomDialog && uiState.randomAnime != null) {
             AlertDialog(
                 onDismissRequest = { animesViewModel.onCloseRandomDialog() },
@@ -214,10 +229,12 @@ fun AnimesScreen(
             )
         }
 
-        // Diálogo de detalles del Anime
         if (uiState.selectedAnimeDetails != null) {
             AnimeDetailsDialog(
                 anime = uiState.selectedAnimeDetails!!,
+                imageModel = animesViewModel.getImageModel(uiState.selectedAnimeDetails!!.id, uiState.selectedAnimeDetails!!.imageUrl),
+                showFullImage = uiState.showFullImage,
+                onShowFullImageChange = { show -> animesViewModel.setShowFullImage(show) },
                 onLike = { id -> animesViewModel.onLikeAnime(id) },
                 onDismiss = { animesViewModel.onCloseAnimeDetails() }
             )

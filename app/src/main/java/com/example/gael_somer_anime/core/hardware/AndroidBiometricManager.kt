@@ -15,7 +15,7 @@ import javax.inject.Singleton
 class AndroidBiometricManagerImpl @Inject constructor(
     @ApplicationContext context: Context
 ) : BiometricManager {
-    val applicationContext = context
+    private val applicationContext = context
     override fun canAuthenticate(): Boolean {
         val biometricManager = AndroidBiometricManager.from(applicationContext)
         return biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL) == AndroidBiometricManager.BIOMETRIC_SUCCESS
