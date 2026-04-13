@@ -9,6 +9,7 @@ import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 import com.example.gael_somer_anime.features.anime.domain.usecases.CreateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.DeleteAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.GetAnimesUseCase
+import com.example.gael_somer_anime.features.anime.domain.usecases.SyncAnimesUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UpdateAnimeUseCase
 import com.example.gael_somer_anime.features.anime.domain.usecases.UploadAnimeImageUseCase
 import com.example.gael_somer_anime.features.auth.domain.repositories.AuthRepository
@@ -36,6 +37,7 @@ class AnimesViewModel @Inject constructor(
     private val createAnimeUseCase: CreateAnimeUseCase,
     private val updateAnimeUseCase: UpdateAnimeUseCase,
     private val deleteAnimeUseCase: DeleteAnimeUseCase,
+    private val syncAnimesUseCase: SyncAnimesUseCase,
     private val uploadAnimeImageUseCase: UploadAnimeImageUseCase,
     private val authRepository: AuthRepository,
     private val subscribeToTagUseCase: SubscribeToTagUseCase,
@@ -48,6 +50,8 @@ class AnimesViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AnimesUiState())
     val uiState: StateFlow<AnimesUiState> = _uiState.asStateFlow()
+
+    private var pendingAnimeIdToOpen: Int? = null
 
     init {
         val currentUserId = authRepository.getCurrentUserId()
@@ -90,14 +94,35 @@ class AnimesViewModel @Inject constructor(
                 }
                 .collectLatest { animeList ->
                     _uiState.update { state ->
+                        var newDetails = state.selectedAnimeDetails
+                        
+                        // Si estábamos esperando que cargara un anime en particular por notificación:
+                        if (pendingAnimeIdToOpen != null) {
+                            val found = animeList.find { it.id == pendingAnimeIdToOpen }
+                            if (found != null) {
+                                newDetails = found
+                                pendingAnimeIdToOpen = null
+                            }
+                        }
+
                         state.copy(
                             animes = animeList,
                             myAnimes = animeList.filter { it.userId == state.currentUserId },
                             otherAnimes = animeList.filter { it.userId != state.currentUserId },
+                            selectedAnimeDetails = newDetails,
                             isLoading = false
                         )
                     }
                 }
+        }
+    }
+
+    private fun syncAnimes() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            syncAnimesUseCase()
+            // El resultado de syncAnimesUseCase() actualizará ROOM y disparará collectLatest de arriba
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
@@ -154,6 +179,11 @@ class AnimesViewModel @Inject constructor(
         val anime = allAnimes.find { it.id == animeId }
         if (anime != null) {
             _uiState.update { it.copy(selectedAnimeDetails = anime) }
+        } else {
+            // El anime no está en ROOM localmente (probablemente se hizo desde la API web u otro dispositivo)
+            // Lo guardamos en memoria y forzamos sincornización:
+            pendingAnimeIdToOpen = animeId
+            syncAnimes()
         }
     }
 
