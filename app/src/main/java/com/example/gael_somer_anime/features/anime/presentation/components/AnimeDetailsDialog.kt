@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.gael_somer_anime.core.services.ImageCacheHelper
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 
 @Composable
@@ -24,6 +26,7 @@ fun AnimeDetailsDialog(
     onLike: (Int) -> Unit = {},
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     var showFullImage by remember { mutableStateOf(false) }
 
     if (showFullImage) {
@@ -48,7 +51,7 @@ fun AnimeDetailsDialog(
                         }
                     }
                     AsyncImage(
-                        model = anime.imageUrl ?: "https://via.placeholder.com/400",
+                        model = ImageCacheHelper.getImageModel(context, anime.id, anime.imageUrl),
                         contentDescription = anime.titulo,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -71,9 +74,8 @@ fun AnimeDetailsDialog(
             )
         ) {
             Column {
-                // Header Image
                 AsyncImage(
-                    model = anime.imageUrl ?: "https://via.placeholder.com/400",
+                    model = ImageCacheHelper.getImageModel(context, anime.id, anime.imageUrl),
                     contentDescription = anime.titulo,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -82,7 +84,6 @@ fun AnimeDetailsDialog(
                     contentScale = ContentScale.Crop
                 )
 
-                // Content
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = anime.titulo,
@@ -90,17 +91,16 @@ fun AnimeDetailsDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     Text(text = "Género: ${anime.genero}", style = MaterialTheme.typography.bodyMedium)
                     Text(text = "Año: ${anime.anio}", style = MaterialTheme.typography.bodyMedium)
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = anime.descripcion,
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    // Tags
                     val tagList = anime.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                     if (tagList.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(12.dp))
@@ -124,8 +124,7 @@ fun AnimeDetailsDialog(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Buttons
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -145,7 +144,7 @@ fun AnimeDetailsDialog(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        
+
                         TextButton(onClick = onDismiss) {
                             Text("Cerrar")
                         }

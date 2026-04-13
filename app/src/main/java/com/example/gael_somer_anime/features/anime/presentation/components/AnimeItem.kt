@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -18,9 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.example.gael_somer_anime.core.services.ImageCacheHelper
 import com.example.gael_somer_anime.features.anime.domain.entities.Anime
 
 @Composable
@@ -36,6 +36,8 @@ fun AnimeItem(
     onTagClick: (String) -> Unit,
     onViewDetails: (Int) -> Unit
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -44,7 +46,7 @@ fun AnimeItem(
     ) {
         Column {
             AsyncImage(
-                model = anime.imageUrl ?: "https://via.placeholder.com/150",
+                model = ImageCacheHelper.getImageModel(context, anime.id, anime.imageUrl),
                 contentDescription = anime.titulo,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -62,7 +64,6 @@ fun AnimeItem(
                 Text(text = "Año: ${anime.anio}")
                 Text(text = "Descripción: ${anime.descripcion}")
 
-                // Tags en chips de colores
                 val tagList = anime.tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                 if (tagList.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(6.dp))

@@ -18,17 +18,19 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.gael_somer_anime.core.navigation.*
 import com.example.gael_somer_anime.core.network.SessionManager
+import com.example.gael_somer_anime.core.services.ImageCacheScheduler
+import com.example.gael_somer_anime.core.services.ImageCacheService
 import com.google.firebase.messaging.FirebaseMessaging
 import com.example.gael_somer_anime.features.auth.presentation.components.Header
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 import android.content.Intent
+
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     private var initialAnimeId by mutableStateOf<String?>(null)
-
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -42,11 +44,17 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         requestNotificationPermission()
         fetchAndStoreFcmToken()
-        
+
         initialAnimeId = intent.getStringExtra("anime_id")
+
+        // Si hay sesión activa, iniciar caché inmediato + programar periódico
+        if (SessionManager.fetchToken(this) != null) {
+            ImageCacheService.start(this)
+            ImageCacheScheduler.schedule(this)
+        }
 
         setContent {
             Gael_somer_animeTheme {
