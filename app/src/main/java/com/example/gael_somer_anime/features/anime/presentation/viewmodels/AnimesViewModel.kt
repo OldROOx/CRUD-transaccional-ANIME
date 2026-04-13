@@ -149,6 +149,18 @@ class AnimesViewModel @Inject constructor(
         _uiState.update { it.copy(showDialog = false, selectedAnime = null) }
     }
 
+    fun onOpenAnimeDetails(animeId: Int) {
+        val allAnimes = _uiState.value.animes
+        val anime = allAnimes.find { it.id == animeId }
+        if (anime != null) {
+            _uiState.update { it.copy(selectedAnimeDetails = anime) }
+        }
+    }
+
+    fun onCloseAnimeDetails() {
+        _uiState.update { it.copy(selectedAnimeDetails = null) }
+    }
+
     fun onFieldChange(titulo: String? = null, genero: String? = null, anio: String? = null, descripcion: String? = null, tags: String? = null) {
         _uiState.update {
             it.copy(
@@ -264,5 +276,6 @@ data class AnimesUiState(
     val descripcionError: String? = null,
     val showRandomDialog: Boolean = false,
     val randomAnime: Anime? = null,
-    val subscribedTags: List<String> = emptyList()
+    val subscribedTags: List<String> = emptyList(),
+    val selectedAnimeDetails: Anime? = null
 )

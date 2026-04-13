@@ -23,8 +23,12 @@ import com.example.gael_somer_anime.features.auth.presentation.components.Header
 import com.example.gael_somer_anime.ui.theme.Gael_somer_animeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+import android.content.Intent
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
+
+    private var initialAnimeId by mutableStateOf<String?>(null)
+
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -41,6 +45,8 @@ class MainActivity : FragmentActivity() {
         
         requestNotificationPermission()
         fetchAndStoreFcmToken()
+        
+        initialAnimeId = intent.getStringExtra("anime_id")
 
         setContent {
             Gael_somer_animeTheme {
@@ -67,7 +73,9 @@ class MainActivity : FragmentActivity() {
                     Box(modifier = Modifier.padding(padding)) {
                         AppNavHost(
                             navController = navController,
-                            startDestination = startDest
+                            startDestination = startDest,
+                            initialAnimeId = initialAnimeId,
+                            onAnimeIdConsumed = { initialAnimeId = null }
                         )
                     }
                 }
@@ -100,5 +108,11 @@ class MainActivity : FragmentActivity() {
         } catch (e: Exception) {
             Log.e("FCM", "ERROR CRÍTICO: ${e.message}")
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        initialAnimeId = intent.getStringExtra("anime_id")
     }
 }

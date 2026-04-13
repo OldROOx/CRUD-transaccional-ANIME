@@ -38,27 +38,42 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val tags = message.data["tags"]
         val animeId = message.data["anime_id"]
 
-        val body = if (tags != null) "$bodyText\nTags: $tags" else bodyText
-
         vibrationManager.vibrateSuccess()
-        sendNotification(title, body, animeId)
+        sendNotification(title, bodyText, animeId, tags)
     }
 
-    private fun sendNotification(title: String, body: String, animeId: String?) {
+    private fun sendNotification(title: String, body: String, animeId: String?, tags: String?) {
         Log.d("FCM_RECIBIDO", "Preparando notificación para mostrar: $title")
+        // ID único para la notificación
+        val notificationId = System.currentTimeMillis().toInt()
+
+        // Intent para "Ver Anime" (Redirige a MainActivity)
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             animeId?.let { putExtra("anime_id", it) }
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, notificationId, intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Botón "Ver Anime"
         val actionVer = NotificationCompat.Action.Builder(
             0, "Ver Anime", pendingIntent
+        ).build()
+
+        // Intent para "Ignorar" (Descarta la notificación)
+        val dismissIntent = Intent(this, NotificationDismissReceiver::class.java).apply {
+            putExtra("notification_id", notificationId)
+        }
+        
+        val dismissPendingIntent = PendingIntent.getBroadcast(
+            this, notificationId + 1, dismissIntent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val actionDismiss = NotificationCompat.Action.Builder(
+            0, "Ignorar", dismissPendingIntent
         ).build()
 
         val channelId = "anime_notifications"
@@ -77,17 +92,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 notificationManager.createNotificationChannel(channel)
             }
 
+            val bigTextStyle = NotificationCompat.BigTextStyle().bigText(body)
+            if (tags != null) {
+                // Esto colocará los tags justo en la parte inferior de la notificación de manera nativa
+                bigTextStyle.setSummaryText("Tags: $tags")
+            }
+
             val notificationBuilder = NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setStyle(NotificationCompat.BigTextStyle().bigText(body)) // Permite saltos de línea para mostrar todos los tags
+                .setStyle(bigTextStyle)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setContentIntent(pendingIntent)
                 .addAction(actionVer) // Agregar botón Ver Anime
+                .addAction(actionDismiss) // Agregar botón Ignorar
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 }

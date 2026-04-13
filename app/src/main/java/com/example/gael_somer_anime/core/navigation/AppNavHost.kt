@@ -14,7 +14,9 @@ import com.example.gael_somer_anime.features.watchlist.presentation.screens.Watc
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    initialAnimeId: String? = null,
+    onAnimeIdConsumed: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -47,7 +49,9 @@ fun AppNavHost(
                 },
                 onNavToTags = {
                     navController.navigate(Screens.TagSubscriptions.route)
-                }
+                },
+                initialAnimeId = initialAnimeId,
+                onAnimeIdConsumed = onAnimeIdConsumed
             )
         }
         composable(Screens.TagSubscriptions.route) {

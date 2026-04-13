@@ -33,50 +33,14 @@ fun AnimeItem(
     onDelete: (Int) -> Unit,
     onFavoriteToggle: () -> Unit,
     onWatchlistToggle: () -> Unit,
-    onTagClick: (String) -> Unit
+    onTagClick: (String) -> Unit,
+    onViewDetails: (Int) -> Unit
 ) {
-    var showFullImage by remember { mutableStateOf(false) }
-
-    if (showFullImage) {
-        Dialog(onDismissRequest = { showFullImage = false }) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        IconButton(
-                            onClick = { showFullImage = false },
-                            modifier = Modifier.align(Alignment.TopEnd)
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar")
-                        }
-                    }
-                    AsyncImage(
-                        model = anime.imageUrl ?: "https://via.placeholder.com/150",
-                        contentDescription = anime.titulo,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-            }
-        }
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .then(
-                if (anime.userId == currentUserId) {
-                    Modifier.clickable { onEdit(anime) }
-                } else Modifier
-            )
+            .clickable { onViewDetails(anime.id) }
     ) {
         Column {
             AsyncImage(
@@ -84,8 +48,7 @@ fun AnimeItem(
                 contentDescription = anime.titulo,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .clickable { showFullImage = true },
+                    .height(300.dp),
                 contentScale = ContentScale.Crop
             )
             Column(

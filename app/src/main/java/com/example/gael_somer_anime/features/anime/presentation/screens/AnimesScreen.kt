@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.gael_somer_anime.features.anime.presentation.components.AnimeDetailsDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeFormDialog
 import com.example.gael_somer_anime.features.anime.presentation.components.AnimeItem
 import com.example.gael_somer_anime.features.anime.presentation.viewmodels.AnimesViewModel
@@ -28,6 +29,8 @@ fun AnimesScreen(
     onNavToFavorites: () -> Unit,
     onNavToWatchlist: () -> Unit,
     onNavToTags: () -> Unit,
+    initialAnimeId: String? = null,
+    onAnimeIdConsumed: () -> Unit = {},
     animesViewModel: AnimesViewModel = hiltViewModel(),
     favoritesViewModel: FavoritesViewModel = hiltViewModel(),
     watchlistViewModel: WatchlistViewModel = hiltViewModel()
@@ -40,6 +43,16 @@ fun AnimesScreen(
         animesViewModel.startShakeDetection()
         onDispose {
             animesViewModel.stopShakeDetection()
+        }
+    }
+
+    // Efecto para abrir el dialog automáticamente si recibimos un ID válido de notificación
+    LaunchedEffect(initialAnimeId, uiState.animes) {
+        if (initialAnimeId != null && uiState.animes.isNotEmpty()) {
+            initialAnimeId.toIntOrNull()?.let { id ->
+                animesViewModel.onOpenAnimeDetails(id)
+            }
+            onAnimeIdConsumed()
         }
     }
 
@@ -128,7 +141,8 @@ fun AnimesScreen(
                                 onWatchlistToggle = {
                                     watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
                                 },
-                                onTagClick = { tag -> animesViewModel.onTagClick(tag) }
+                                onTagClick = { tag -> animesViewModel.onTagClick(tag) },
+                                onViewDetails = { id -> animesViewModel.onOpenAnimeDetails(id) }
                             )
                         }
                     }
@@ -161,7 +175,8 @@ fun AnimesScreen(
                             onWatchlistToggle = {
                                 watchlistViewModel.addToWatchlist(anime.id, WatchlistStatus.POR_VER)
                             },
-                            onTagClick = { tag -> animesViewModel.onTagClick(tag) }
+                            onTagClick = { tag -> animesViewModel.onTagClick(tag) },
+                            onViewDetails = { id -> animesViewModel.onOpenAnimeDetails(id) }
                         )
                     }
                 }
@@ -196,6 +211,14 @@ fun AnimesScreen(
                         Text("Cerrar")
                     }
                 }
+            )
+        }
+
+        // Diálogo de detalles del Anime
+        if (uiState.selectedAnimeDetails != null) {
+            AnimeDetailsDialog(
+                anime = uiState.selectedAnimeDetails!!,
+                onDismiss = { animesViewModel.onCloseAnimeDetails() }
             )
         }
     }
