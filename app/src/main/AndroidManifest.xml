@@ -35,5 +35,10 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Canal por defecto para notificaciones en segundo plano -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="anime_notifications" />
     </application>
 </manifest>
